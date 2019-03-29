@@ -33,7 +33,7 @@ Tests with Ekinnox's videos
 
 - Ground truth, Results by LCR-NET 3D and Results by LCR-NET 2D and Kinect Depthmap
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/gt_angles.png)
-![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dLcrnet_angles.png)
+![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dKinect_angles.png)
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dLcrnet_angles.png)
 
 - You can also find them in folder "results"
