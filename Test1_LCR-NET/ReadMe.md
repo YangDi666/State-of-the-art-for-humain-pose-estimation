@@ -3,23 +3,23 @@
 ## Introduction :  
 Based on https://thoth.inrialpes.fr/src/LCR-Net/
 
-### Framework  
+Framework  
 - Pytorch 
 - Detectron
-### Methodes  
+Methodes  
 End-to-Top, humain detection by Mask R-CNN with Detectron + LCR-NET model for key points estimation
-### Licence  
+Licence  
 
-### Database for training  
+Database for training  
 - Coco
 - 
-### Advantages 
+Advantages 
 - A solution for occlusion problem
 - Good precision
 - 3D and 2D
 - 13 joints
 - Time : about 340ms/frame common
-### Installation  
+Installation  
 In the fold "code"
 ## Evaluation : 
 - Measure the knee angles for each image in the video and create 2 graph to show the variation of the knee angles for the videos and compare the them with the ground truth
@@ -33,7 +33,7 @@ Results in Kinect RGB and 3D Cloud points
 
 Ground truth, Results by LCR-NET 3D and Results by LCR-NET 2D and Kinect Depthmap
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/gt_angles.png)
-![ad](hhttps://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/result/3dKinect_angles.png)
+![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dLcrnet_angles.png)
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dLcrnet_angles.png)
 
 You can also find them in folder "results"
