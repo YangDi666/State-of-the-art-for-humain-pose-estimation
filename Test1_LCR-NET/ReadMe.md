@@ -27,6 +27,7 @@ In the fold "code"
 - The other (Results Kinect) graph is created by calculating the angles with the 3D claud points constructed from algo SK 2D results by Kinect RGB-D
 ### Tests with Ekinnox's videos  
 In folder "results"
+![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/Kinect 2d 3d and skeleton_1.png)
 ### Improve 
 - Histogramme analysis for depth map to precise the depth value
 - Trainning with our data
