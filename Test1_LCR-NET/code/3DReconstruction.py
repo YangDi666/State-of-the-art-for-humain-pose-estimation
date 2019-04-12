@@ -1,3 +1,5 @@
+
+
 import cv2
 import numpy as np
 import matplotlib.pylab as plt
@@ -8,6 +10,7 @@ import tools
 import os
 import re
 from matplotlib.animation import FuncAnimation 
+import sys
 
 '''
 def init(): 
@@ -22,7 +25,7 @@ def update(frame):
 '''
 
 def show_angle3d(nb_video, frames): 
-
+    b='1'
     files=os.listdir('testVedios/test'+nb_video+'/') 
     for i in files:
         if (len(re.findall('.*C\.json', i))!=0):
@@ -35,12 +38,57 @@ def show_angle3d(nb_video, frames):
     print(filedepth)
     print(filecolor)
     fig=plt.figure()
-    ax=fig.add_subplot(121, projection='3d')
-    ax.set_title('3D claud points')
-    ax2=fig.add_subplot(122)
-        
+    fig2=plt.figure()
+
+    def call_back(event):
+        axtemp=event.inaxes
+        x_min, x_max = axtemp.get_xlim()
+        y_min, y_max = axtemp.get_ylim()
+        z_min, z_max = axtemp.get_zlim()
+        dx = (x_max - x_min) / 10
+        dy = (y_max - y_min) / 10
+        dz = (z_max - z_min) / 10
+        if event.button == 'up':
+            axtemp.set(xlim=(x_min + dx, x_max - dx))
+            axtemp.set(ylim=(y_min + dy, y_max - dy))
+            axtemp.set(zlim=(z_min + dz, z_max - dz))
+        elif event.button == 'down':
+            axtemp.set(xlim=(x_min - dx, x_max + dx))
+            axtemp.set(ylim=(y_min - dy, y_max + dy))
+            axtemp.set(zlim=(z_min - dz, z_max + dz))
+ 
+        fig2.canvas.draw_idle()  # 绘图动作实时反映在图像上
+    fig2.canvas.mpl_connect('scroll_event', call_back)
+    fig2.canvas.mpl_connect('button_press_event', call_back)
+    
+    # Depthmap
+    ax=fig2.add_subplot(111, projection='3d')
+    ax.set_title('Depth map_front '+b+'m')
+
+    # Color Image 
+    ax2=fig.add_subplot(221)     
     # fig=plt.figure()
-    ax2.set_title('2D color image')
+    ax2.set_title('LCR-NET 2D in Color image_front '+b+'m')
+    ax5=fig.add_subplot(222)
+    
+    # sk2d in depthmap
+    #ax4=fig.add_subplot(223, projection='3d')
+    #ax4.set_title('LCR-NET SK 2D in Depth map_'+b+'m front')
+   
+    # sk3d
+    ax3=fig.add_subplot(212, projection='3d')
+
+    
+    ax3.set_title('LCR-NET 3D_front '+b+'m')
+    ax3.set_aspect('equal')
+    ax3.elev = -90
+    ax3.azim = 90
+    ax3.dist = 8
+
+    ax3.set_xticklabels([])
+    ax3.set_yticklabels([])
+    ax3.set_zticklabels([])
+
     v_c=cv2.VideoCapture('testVedios/test'+nb_video+'/'+filecolor)
 
     with open('testVedios/test'+nb_video+'/'+filejson) as json_data:
@@ -65,6 +113,15 @@ def show_angle3d(nb_video, frames):
         y=[]
         z=[]
         
+        # show 3d claud points sous-echant
+        for i in range(600,1000,30):
+            for j in range(200,960,60):
+                a=tools.RGBto3D((i,j),img_m)
+                x.append(a[0])
+                y.append(a[1])
+                z.append(a[2])
+        #ax4.scatter(x,z,y, s=1)
+
         # show 3d claud points
         for i in range(600,1000,3):
             for j in range(200,960,6):
@@ -74,21 +131,33 @@ def show_angle3d(nb_video, frames):
                 z.append(a[2])
         ax.scatter(x,z,y, s=1)
         
-        # show 3d joints
         if len(d['frames'][t])!=0:
+            #SK 2D
             xjoints=d['frames'][t][0]['pose2d'][:13]
             yjoints=d['frames'][t][0]['pose2d'][13:]
+
+            #SK 3D
+            x3d=d['frames'][t][0]['pose3d'][:13]
+            z3d=d['frames'][t][0]['pose3d'][13:26]
+            y3d=d['frames'][t][0]['pose3d'][26:]
+
+            #SK 2D in Depth
             xjoints_3d=[]
             yjoints_3d=[]
             zjoints_3d=[]
 
             for i in range(13):
-                joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m)
+                
+                joints=tools.RGBto3D((xjoints[i], yjoints[i]), im, True, 7)
                 xjoints_3d.append(joints[0])
                 yjoints_3d.append(joints[1])
                 zjoints_3d.append(joints[2])
 
+            print(xjoints_3d, yjoints_3d, zjoints_3d)
+        # show joints
         ax.scatter(xjoints_3d, zjoints_3d, yjoints_3d , color='r')
+        ax3.scatter(x3d, z3d, y3d , color='r')
+        #ax4.scatter(xjoints_3d, zjoints_3d, yjoints_3d , color='r')
         '''
         anglesl.append(180-tools.angle((xjoints_3d[1],yjoints_3d[1],zjoints_3d[1]),(xjoints_3d[3],yjoints_3d[3],zjoints_3d[3]),(xjoints_3d[5],yjoints_3d[5],zjoints_3d[5])))
         anglesr.append(180-tools.angle((xjoints_3d[0],yjoints_3d[0],zjoints_3d[0]),(xjoints_3d[2],yjoints_3d[2],zjoints_3d[2]),(xjoints_3d[4],yjoints_3d[4],zjoints_3d[4])))
@@ -98,12 +167,33 @@ def show_angle3d(nb_video, frames):
         print(anglesl)
         print(anglesr)
         '''
-        # show 3d skelecton
+        # ax show 3d skelecton
         ax.plot([xjoints_3d[k] for k in [0,2,4,5,3,1]], [zjoints_3d[k] for k in [0,2,4,5,3,1]], [yjoints_3d[k] for k in [0,2,4,5,3,1]], color='orange' )
         ax.plot([xjoints_3d[k] for k in [6,8,10,11,9,7]], [zjoints_3d[k] for k in [6,8,10,11,9,7]], [yjoints_3d[k] for k in [6,8,10,11,9,7]], color='orange' )
-        ax.plot([xjoints_3d[12] , (xjoints_3d[4]+xjoints_3d[5])/2], [zjoints_3d[12], (zjoints_3d[4]+zjoints_3d[5])/2], [yjoints_3d[12], (yjoints_3d[4]+yjoints_3d[5])/2], color='orange' )
+        ax.plot([xjoints_3d[12] , (xjoints_3d[10]+xjoints_3d[11])/2 ,(xjoints_3d[4]+xjoints_3d[5])/2], [zjoints_3d[12], (zjoints_3d[10]+zjoints_3d[11])/2, (zjoints_3d[4]+zjoints_3d[5])/2], [yjoints_3d[12],  (yjoints_3d[10]+yjoints_3d[11])/2, (yjoints_3d[4]+yjoints_3d[5])/2], color='orange' )
         
-        # show color image and the joints 
+        # ax4 show 3d skelecton
+        #ax4.plot([xjoints_3d[k] for k in [0,2,4,5,3,1]], [zjoints_3d[k] for k in [0,2,4,5,3,1]], [yjoints_3d[k] for k in [0,2,4,5,3,1]], color='orange' )
+        #ax4.plot([xjoints_3d[k] for k in [6,8,10,11,9,7]], [zjoints_3d[k] for k in [6,8,10,11,9,7]], [yjoints_3d[k] for k in [6,8,10,11,9,7]], color='orange' )
+        #ax4.plot([xjoints_3d[12] , (xjoints_3d[10]+xjoints_3d[11])/2 ,(xjoints_3d[4]+xjoints_3d[5])/2], [zjoints_3d[12], (zjoints_3d[10]+zjoints_3d[11])/2, (zjoints_3d[4]+zjoints_3d[5])/2], [yjoints_3d[12],  (yjoints_3d[10]+yjoints_3d[11])/2, (yjoints_3d[4]+yjoints_3d[5])/2], color='orange' )
+        
+        # show depth image and the joints
+        ax5.imshow(im)
+        xjoints_d=[tools.RGBtoD((xjoints[i], yjoints[i]))[0] for i in range(13)]
+        yjoints_d=[tools.RGBtoD((xjoints[i], yjoints[i]))[1]+424 for i in range(13)]
+        ax5.plot([xjoints_d[k] for k in [0,2,4,5,3,1]], [yjoints_d[k] for k in [0,2,4,5,3,1]] )
+        ax5.plot([xjoints_d[k] for k in [6,8,10,11,9,7]], [yjoints_d[k] for k in [6,8,10,11,9,7]])
+        ax5.plot([xjoints_d[12] , (xjoints_d[4]+xjoints_d[5])/2], [yjoints_d[12], (yjoints_d[4]+yjoints_d[5])/2])
+        ax5.scatter(xjoints_d, yjoints_d, color='r', s=5)
+        
+        # ax3 show 3d skelecton
+        ax3.plot([x3d[k] for k in [0,2,4,5,3,1]], [z3d[k] for k in [0,2,4,5,3,1]], [y3d[k] for k in [0,2,4,5,3,1]], color='orange' )
+        ax3.plot([x3d[k] for k in [6,8,10,11,9,7]], [z3d[k] for k in [6,8,10,11,9,7]], [y3d[k] for k in [6,8,10,11,9,7]], color='orange' )
+        ax3.plot([x3d[12] , (x3d[10]+x3d[11])/2 , (x3d[4]+x3d[5])/2], [z3d[12], (z3d[10]+z3d[11])/2, (z3d[4]+z3d[5])/2], [y3d[12], (y3d[10]+y3d[11])/2, (y3d[4]+y3d[5])/2], color='orange' )
+        
+
+        
+        # show color image and the joints with 3d skelecton 
         ax2.imshow(im_c)    
         ax2.plot([xjoints[k] for k in [0,2,4,5,3,1]], [yjoints[k] for k in [0,2,4,5,3,1]] )
         ax2.plot([xjoints[k] for k in [6,8,10,11,9,7]], [yjoints[k] for k in [6,8,10,11,9,7]])
@@ -111,11 +201,13 @@ def show_angle3d(nb_video, frames):
         ax2.scatter(xjoints, yjoints, color='r', s=5)
         
         # show the joints' positions
-        for a in range(0, 12, 2):
-                ax2.text(xjoints[a]-500, yjoints[a], '(%.1f, %.1f, %.1f)'%(xjoints_3d[a],yjoints_3d[a], zjoints_3d[a]), color='blue')
-        for a in range(1, 13, 2):
+        for a in [0,2,4,8,10]:
+                ax2.text(xjoints[a]-350, yjoints[a], '(%.1f, %.1f, %.1f)'%(xjoints_3d[a],yjoints_3d[a], zjoints_3d[a]), color='blue')
+        for a in [1,3,5,9,11]:
                 ax2.text(xjoints[a]+50, yjoints[a], '(%.1f, %.1f, %.1f)'%(xjoints_3d[a],yjoints_3d[a], zjoints_3d[a]), color='orange')
         ax2.text(xjoints[12]-10, yjoints[12]-10, '(%.1f, %.1f, %.1f)'%(xjoints_3d[12],yjoints_3d[12], zjoints_3d[12]), color='g')
+        ax2.text(xjoints[6]-550, yjoints[6], '(%.1f, %.1f, %.1f)'%(xjoints_3d[6],yjoints_3d[6], zjoints_3d[6]), color='g')
+        ax2.text(xjoints[7]+250, yjoints[7], '(%.1f, %.1f, %.1f)'%(xjoints_3d[7],yjoints_3d[7], zjoints_3d[7]), color='g')
    
         '''
         print(xjoints)
@@ -123,13 +215,21 @@ def show_angle3d(nb_video, frames):
         print(zjoints)
     ax2.scatter(xjoints, zjoints, yjoints, color='r')
     '''    
+    plt.show()
+        #plt.pause(1)
+        #ax.cla()
+        #ax2.cla()
+        #ax3.cla()
+        #ax5.cla()
         
     v.release()
     frames=range(frames[0],frames[1])
     #ax.plot(frames, anglesl)
     #ax2.plot(frames, anglesr)
-    plt.show()
-
+   
 #for frame in range(100,150):
-frame=107
-show_angle3d('1', [frame, frame+1])
+frame=int(sys.argv[1])
+show_angle3d('2', [frame, frame+1])
+
+
+sys.exit(1)

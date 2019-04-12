@@ -10,6 +10,7 @@ import tools
 from tqdm import tqdm
 import os
 import re
+from scipy import signal
 
 
 def show_result(nb_video, point, frames):
@@ -33,7 +34,6 @@ def show_result(nb_video, point, frames):
                 i=last
             last=i    
             angles.append(180-float(i))   
-            
         ax_left.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(angles), color='b')#, marker='.')
        
         ax_right=fig.add_subplot(212)
@@ -118,7 +118,7 @@ def show_angle3d(nb_vedio, frames):
     fig=plt.figure()
     ax=fig.add_subplot(211)
     ax2=fig.add_subplot(212)
-    ax.set_title('3d kinect')
+    ax.set_title('3d kinect LCR-NET_Original')
     ax.set_xlabel('Frame')
     ax.set_ylabel('Angle_left')
     ax2.set_xlabel('Frame')
@@ -136,12 +136,9 @@ def show_angle3d(nb_vedio, frames):
         v.set(cv2.CAP_PROP_POS_FRAMES, t)
         ret, im=v.read()
     
-
-        #中值滤波
-        img_m=cv2.medianBlur(im,5)
+      
+        img_m=cv2.medianBlur(im,7)
         font=cv2.FONT_HERSHEY_SIMPLEX
-        
-
         '''
         for i in range(800,980,2):
             for j in range(300,860,5):
@@ -159,10 +156,11 @@ def show_angle3d(nb_vedio, frames):
     
     
             for i in range(13):
-                joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m)
+                joints=tools.RGBto3D((xjoints[i], yjoints[i]), im, True, 7)
                 xjoints[i]=joints[0]
                 yjoints[i]=joints[1]
                 zjoints.append(joints[2])
+            
 
         anglesl.append(180-tools.angle((xjoints[1],yjoints[1],zjoints[1]),(xjoints[3],yjoints[3],zjoints[3]),(xjoints[5],yjoints[5],zjoints[5])))
         anglesr.append(180-tools.angle((xjoints[0],yjoints[0],zjoints[0]),(xjoints[2],yjoints[2],zjoints[2]),(xjoints[4],yjoints[4],zjoints[4])))
@@ -179,10 +177,16 @@ def show_angle3d(nb_vedio, frames):
     ax2.scatter(xjoints, zjoints, yjoints, color='r')
     '''    
     v.release()
+    
+    #b, a = signal.butter(8, 0.3, 'lowpass') 
+    #anglesl = signal.filtfilt(b, a, anglesl) 
+    #anglesr = signal.filtfilt(b, a, anglesr)   
     frames=range(frames[0],frames[1])
     ax.plot(frames, anglesl)
     
-    ax2.plot(frames, anglesr, color='r')
+    ax2.plot(frames, anglesr, color='r')#, marker='.')
+    #for i in range(50): y1.append(i) # 每迭代一次，将i放入y1中画出来 ax.cla() # 清除键 ax.bar(y1, label='test', height=y1, width=0.3) ax.legend() plt.pause(0.1)
+
 
 def show_gt(nb_video, frames):
     
@@ -251,7 +255,7 @@ if __name__=="__main__":
     frames=[]
     frames.append(int(sys.argv[3]))
     frames.append(int(sys.argv[4]))
-    show_gt(str(nb_video), frames)
+    #show_gt(str(nb_video), frames)
     show_result(nb_video, point, frames)
     show_angle3d(str(nb_video),frames)
     plt.show()
