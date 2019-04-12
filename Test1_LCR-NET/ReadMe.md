@@ -38,8 +38,12 @@ Tests with Ekinnox's videos
 
 - You can also find them in folder "results"
 
-Improve 
-- Histogramme analysis for depth map to precise the depth value
+Improvement
+- Histogramme analysis for depth map to precise the depth value 
+![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/improvement%20for%20the%20graph.png)
+- Result : 
+![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dKinect_angles%2B.png)
+
 - Trainning with our data
 ## Principle code :
 - demo-predict.py 
