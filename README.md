@@ -1,8 +1,6 @@
 # State-of-the-art-for-humain-pose-estimation
 
-This project is for Ekinnox R&D, the V2 developement of KinTrack
-
-- Intern : Di Yang
+- Di Yang
 ### Tutors : 
 - Ekinnox : Mélaine Gautier, Jean-Dominique Favreau
 - Inria : Francois Bremond 
