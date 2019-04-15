@@ -1,16 +1,16 @@
 # State-of-the-art-for-humain-pose-estimation
 
-This project is for the V2 developement of KinTrack
+This project is for Ekinnox R&D, the V2 developement of KinTrack
 
-- Ekinnox intern : Di Yang
-### Tutor : 
+- Intern : Di Yang
+### Tutors : 
 - Ekinnox : Mélaine Gautier, Jean-Dominique Favreau
-- INRIA : Francois Bremond 
-- TSE : Damien Muselet
+- Inria : Francois Bremond 
+- Télécom : Damien Muselet
 
 ### Resources
 - 24 RGB-D videos (RGB: 1920 * 1080, D: 512 * 424 16bits)
-- Vicon (100Hz)
+- Vicon information (100Hz)
 ### Objectives 
 - Tests of the algos for SK 2D/3D with the RGB videos  
 - 3D Reconstruction with Depth map
