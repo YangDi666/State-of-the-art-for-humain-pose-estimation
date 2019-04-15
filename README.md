@@ -1,10 +1,6 @@
 # State-of-the-art-for-humain-pose-estimation
 
 - Di Yang
-### Tutors : 
-- Ekinnox : Mélaine Gautier, Jean-Dominique Favreau
-- Inria : Francois Bremond 
-- Télécom : Damien Muselet
 
 ### Resources
 - 24 RGB-D videos (RGB: 1920 * 1080, D: 512 * 424 16bits)
