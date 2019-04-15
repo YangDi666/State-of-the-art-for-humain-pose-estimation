@@ -1,22 +1,22 @@
-# INRIA - LCR-Net Multi-person 2D and 3D Pose Detection in Natural Images
+# INRIA - LCR-Net Multi-person 2D and 3D Pose Detection
 
-### Introduction :  
+## Introduction :  
 - [LCR-NET](https://www.researchgate.net/publication/323510313_LCR-Net_Multi-person_2D_and_3D_Pose_Detection_in_Natural_Images) is realised by INRIA Grenoble team and [here](https://thoth.inrialpes.fr/src/LCR-Net/) are the models.
 
-Framework  
+#### Framework  
 - Pytorch 
 - Detectron
 
-Methodes  
+#### Methodes  
 End-to-Top, humain detection by Mask R-CNN with Detectron + LCR-NET model for key points estimation
 
-Licence  
+#### Licence  
 - ...
 
-Database for training  
+#### Database for training  
 - Coco
 - ...
-Advantages 
+#### Advantages 
 - A solution for occlusion problem
 - Good precision
 - 3D and 2D
@@ -24,7 +24,7 @@ Advantages
 - Time : about 340ms/frame common
 - Easy installation
 
-### Evaluation : 
+## Evaluation : 
 - Measure the knee angles for each image in the video and create 2 graph to show the variation of the knee angles for the videos and compare the them with the ground truth
 - One graph (Results LCR-NET) is created by calculating the angles directly with the algo SK 3D results
 - The other (Results Kinect) graph is created by calculating the angles with the 3D claud points constructed from algo SK 2D results by Kinect RGB-D
@@ -39,7 +39,7 @@ Tests with Ekinnox's videos
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dKinect_angles.png)
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dLcrnet_angles.png)
 
-### Improvement
+## Improvement
 - Histogramme analysis for depth map to precise the depth value 
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/improvement%20for%20the%20graph.png)
 ![ad](https://github.com/YangDi666/State-of-art-for-humain-pose-estimation/blob/master/Test1_LCR-NET/results/3dKinect_angles%2B.png)
@@ -47,7 +47,7 @@ Tests with Ekinnox's videos
 - Trainning with our data
 ...
 
-### Principle code :
+## Principle code :
 - demo-predict.py 
 - demo-show.py
 - depth-show.py
