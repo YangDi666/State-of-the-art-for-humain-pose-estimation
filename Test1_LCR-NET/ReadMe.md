@@ -3,19 +3,18 @@
 ## Introduction :  
 - [LCR-NET](https://www.researchgate.net/publication/323510313_LCR-Net_Multi-person_2D_and_3D_Pose_Detection_in_Natural_Images) is realised by INRIA Grenoble team and [here](https://thoth.inrialpes.fr/src/LCR-Net/) are the models.
 
-#### Framework  
-- Pytorch 
-- Detectron
+- Framework  
+Pytorch and Detectron
 
-#### Methodes  
+- Methodes  
 End-to-Top, humain detection by Mask R-CNN with Detectron + LCR-NET model for key points estimation
 
-#### Licence  
-- ...
+- Licence  
+ ...
 
-#### Database for training  
-- Coco
-- ...
+- Database for training  
+Coco
+
 #### Advantages 
 - A solution for occlusion problem
 - Good precision
