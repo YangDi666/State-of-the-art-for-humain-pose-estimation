@@ -13,7 +13,7 @@ Top-down, humain detection by Mask R-CNN with Detectron + LCR-NET model for key 
  ...
 
 - Database for training:  
-Coco
+Humain3.6M, MPII
 
 #### Advantages 
 - A solution for occlusion problem
