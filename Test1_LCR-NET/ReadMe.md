@@ -7,7 +7,7 @@
 Pytorch and Detectron
 
 - Methode:
-Bottom-up, humain detection by Mask R-CNN with Detectron + LCR-NET model for key points estimation
+Top-down, humain detection by Mask R-CNN with Detectron + LCR-NET model for key points estimation
 
 - Licence  
  ...
