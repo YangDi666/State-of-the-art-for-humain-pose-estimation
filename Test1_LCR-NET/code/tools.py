@@ -5,8 +5,7 @@ import math
 import pylab as pl
 import scipy.signal as signal
 
-def RGBtoD(p):
-    CAMERA={
+CAMERA={
     'FX_C':1081.3720703125,
     'FY_C':-1081.3720703125,
     'CX_C':960.5,
@@ -15,6 +14,8 @@ def RGBtoD(p):
     'FY_D':-366.864685058594,
     'CX_D':263.148010253906, 
     'CY_D':200.292007446289}
+
+def RGBtoD(p):
 
     x_c=p[0]
     y_c=p[1]
@@ -38,15 +39,7 @@ def filter(p, im, size):
     return np.median(win)
 
 def RGBto3D(p, im, filter=False, size=0):
-    CAMERA={
-    'FX_C':1081.3720703125,
-    'FY_C':-1081.3720703125,
-    'CX_C':960.5,
-    'CY_C':539.5,
-    'FX_D':366.864685058594,
-    'FY_D':-366.864685058594,
-    'CX_D':263.148010253906, 
-    'CY_D':200.292007446289}
+    
 
     x_c=p[0]
     y_c=p[1]
@@ -85,7 +78,7 @@ def angle(p1,p2,p3):
     if(len_v1!=0 and len_v2!=0):
         return math.degrees(math.acos(dot/(len_v1*len_v2)))
     else:
-        return '999999!'
+        return 180
 
 def v2i(cap, frame, save=False): 
     cap.set(cv2.CAP_PROP_POS_FRAMES, frame)  # 设置帧数标记
@@ -123,18 +116,101 @@ def his_image(im, size, p):
     for i in range(y_d-int((size-1)/2), y_d+int((size-1)/2)+1):
         for j in range(x_d-int((size-1)/2), x_d+int((size-1)/2)+1):
             z0=(img_m[i,j]*256/6+img_m[i+424,j])[0]/10
-            if z0>120 and z0<750:
+            if z0>120 and z0<850:
                 ng.append(int(round(z0)))
     
     print(len(ng))
-  
-
-    ngh=[0]*750
+    ngh=[0]*851
     for h in set(ng):
         ngh[h]=ng.count(h)
 
     zm=ngh.index(max(ngh))*10
     print(zm)
-   
 
     return (zm, ndg_h1*256/6+ndg_b1)
+
+def compt(t1, vd, t2, gt, dt, show=False):
+    gt_r=[]
+    t=[]
+    t1=[j-dt for j in t1]
+    for i in t1:
+        
+        if i<=0:
+            continue
+        elif i<t2[-1]: 
+            if ((math.floor(i/10)*10) in t2):
+                gt_r.append(gt[t2.index(math.floor(i/10)*10)]+((i%10)/10)*(gt[t2.index(math.floor(i/10)*10)+1]-gt[t2.index(math.floor(i/10)*10)]))
+                t.append(i)
+            
+        else:
+            break
+
+    vd_r=[vd[t1.index(j)] for j in t]  
+    err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    if show:
+        fig2=plt.figure()
+        axx=fig2.add_subplot(111)
+        axx.plot(t1, vd, marker='.')
+        axx.plot(t2, gt, marker='.')
+        axx.plot(t, gt_r, marker='.')
+        axx.text(1000, 80, 'Err: '+str(err))
+        axx.text(1000, 70, 'dt: '+str(dt))
+    t=[i+dt for i in t]
+    return [err, t, gt_r]
+
+def comps(t1, vd, t2, gt, ds, show=False):
+    gt_r=[]
+    t=[]
+    vd=[j-ds for j in vd]
+    for i in t1:      
+        if i<=0:
+            continue
+        elif i<t2[-1]: 
+            if math.floor(i/10)*10 in t2 and t2.index(math.floor(i/10)*10)<len(gt):
+                gt_r.append(gt[t2.index(math.floor(i/10)*10)]+((i%10)/10)*(gt[t2.index(math.floor(i/10)*10)+1]-gt[t2.index(math.floor(i/10)*10)]))
+                t.append(i)           
+        else:
+            break
+
+    vd_r=[vd[t1.index(j)] for j in t]  
+    err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    if show:
+        fig2=plt.figure()
+        axx=fig2.add_subplot(111)
+        axx.plot(t1, vd, marker='.')
+        axx.plot(t2, gt, marker='.')
+        axx.plot(t, gt_r, marker='.')
+        axx.text(3000, 3000, 'Err: '+str(err))
+        axx.text(3000, 2000, 'dy: '+str(ds))
+    
+    return err
+
+def VIto3D(p, jsondata, aix, joint=0):
+    j=jsondata
+    dm=j['d'+aix+'m']
+    if joint==0:
+        if aix=='X':
+            k=-p+dm
+        if aix=='Y':
+            k=-p+dm
+        if aix=='Z':
+            k=p+dm
+    else:
+        d=j['d'+aix][joint][0]       
+        if aix=='X':
+            k=-p+d
+        if aix=='Y':
+            k=-p+d
+        if aix=='Z':
+            k=p+d
+    return k
+
+def K3DtoRGB(p):
+    x=p[0]*(CAMERA['FX_C']/p[2])+CAMERA['CX_C']
+    y=p[1]*(CAMERA['FY_C']/p[2])+CAMERA['CY_C']
+    return (x,y)
+
+def K3DtoD(p):
+    x_d=p[0]*(CAMERA['FX_D']/p[2])+CAMERA['CX_D']
+    y_d=p[1]*(CAMERA['FY_D']/p[2])+CAMERA['CY_D']
+    return (x_d,y_d)

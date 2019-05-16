@@ -8,7 +8,7 @@ import scipy.signal as signal
 import os
 from tqdm import tqdm
 import re
-import linshi
+import hist_image
 
 def his(nb_video, frame, size, joint):
 

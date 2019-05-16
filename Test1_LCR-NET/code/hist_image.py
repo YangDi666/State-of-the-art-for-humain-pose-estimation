@@ -48,12 +48,12 @@ def his(nb_video, frame, size, joint):
                 ng.append(int(round(z0)))
     
     print(len(ng))
-  
+    print(ng)
 
-    ngh=[0]*700
+    ngh=[0]*750
     for h in set(ng):
         ngh[h]=ng.count(h)
-
+  
     zm=ngh.index(max(ngh))*10
     print('max: ',zm)
     print('original: ',ndg_h1*256/6+ndg_b1)
@@ -75,12 +75,16 @@ def his(nb_video, frame, size, joint):
     fig=plt.figure()  
     ax1=fig.add_subplot(221)
     ax1.imshow(img_m,'gray')
+    ax1.set_title('Depth map')
     ax2=fig.add_subplot(222)
+    ax2.set_title('Histogramme')
+    ax2.set_xlabel('Distance(cm)')
     #ax2.imshow(mask_bas,'gray')
-    ax2.hist(np.array(ng), bins=size**2)
+    ax2.hist(np.array(ng), bins=size**2+1)
     #ax2.scatter(ndg_b1*256/6+ndg_b1, 15, color='orange')
     # low
     ax3=fig.add_subplot(223)
+    ax3.set_title('Histogramme bas')
     ax3.plot(hist_bas)
     #print (hist_bas[signal.argrelextrema(hist_bas, np.greater)])# signal.argrelextrema(hist_mask, np.greater) jizhidexiabiao
     #print (signal.argrelextrema(hist_bas, np.greater) )
@@ -100,6 +104,7 @@ def his(nb_video, frame, size, joint):
     # hight
     ax4=fig.add_subplot(224)
     ax4.plot(hist_mask)
+    ax4.set_title('Histogramme haut')
     #print (hist_mask[signal.argrelextrema(hist_mask, np.greater)])# signal.argrelextrema(hist_mask, np.greater) jizhidexiabiao
     #print (signal.argrelextrema(hist_mask, np.greater) )
     ax4.plot(signal.argrelextrema(hist_mask,np.greater)[0],hist_mask[signal.argrelextrema(hist_mask, np.greater)[0]],'o') 
@@ -118,7 +123,7 @@ def his(nb_video, frame, size, joint):
     plt.show()
     return (zm, ndg_h1*256/6+ndg_b1)
 
-hist=his('2', 137, 7, 'rthi')
+hist=his('2', 104, 7, 'rknee')
 print(hist)
 '''
 im_h=np.zeros((500,60),np.uint8)

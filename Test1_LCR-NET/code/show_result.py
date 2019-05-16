@@ -113,6 +113,8 @@ def show_angle3d(nb_vedio, frames):
             filejson=i
         if (len(re.findall('.*D.mp4', i))!=0):
             filedepth=i
+            number=filedepth[:-5]
+    print(number)
 
     print(filejson)
     fig=plt.figure()
@@ -130,6 +132,13 @@ def show_angle3d(nb_vedio, frames):
 
     anglesl=[]
     anglesr=[]
+    points3dx=[[] for p in range(13)]
+    points3dy=[[] for p in range(13)]
+    points3dz=[[] for p in range(13)]
+    points2dx=[[] for p in range(13)]
+    points2dy=[[] for p in range(13)]
+    points2ddx=[[] for p in range(13)]
+    points2ddy=[[] for p in range(13)]
 
     for t in tqdm(range(frames[0],frames[1])):
         #print(t)
@@ -150,20 +159,36 @@ def show_angle3d(nb_vedio, frames):
         #ax.scatter(x,z,y)
         '''
         if len(d['frames'][t])!=0:
-            xjoints=d['frames'][t][0]['pose2d'][:13]
-            yjoints=d['frames'][t][0]['pose2d'][13:]
-            zjoints=[]
-    
+            xjoints2d=d['frames'][t][0]['pose2d'][:13]
+            yjoints2d=d['frames'][t][0]['pose2d'][13:]
+            xjoints3d=[]
+            yjoints3d=[]
+            zjoints3d=[]
+            xjoints2dd=[]
+            yjoints2dd=[]
     
             for i in range(13):
-                joints=tools.RGBto3D((xjoints[i], yjoints[i]), im, True, 7)
-                xjoints[i]=joints[0]
-                yjoints[i]=joints[1]
-                zjoints.append(joints[2])
-            
+                joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im, True, 7)
+                #joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im)
+                joints2dd=tools.RGBtoD((xjoints2d[i], yjoints2d[i]))
+                
+                xjoints3d.append(joints[0])
+                yjoints3d.append(joints[1])
+                zjoints3d.append(joints[2])
+                xjoints2dd.append(joints2dd[0])
+                yjoints2dd.append(joints2dd[1])
 
-        anglesl.append(180-tools.angle((xjoints[1],yjoints[1],zjoints[1]),(xjoints[3],yjoints[3],zjoints[3]),(xjoints[5],yjoints[5],zjoints[5])))
-        anglesr.append(180-tools.angle((xjoints[0],yjoints[0],zjoints[0]),(xjoints[2],yjoints[2],zjoints[2]),(xjoints[4],yjoints[4],zjoints[4])))
+        for p in range(13):  
+            points3dx[p].append(xjoints3d[p])
+            points3dy[p].append(yjoints3d[p])
+            points3dz[p].append(zjoints3d[p])
+            points2dx[p].append(xjoints2d[p])
+            points2dy[p].append(yjoints2d[p])
+            points2ddx[p].append(xjoints2dd[p])
+            points2ddy[p].append(yjoints2dd[p])
+           
+        anglesl.append(180-tools.angle((xjoints3d[1],yjoints3d[1],zjoints3d[1]),(xjoints3d[3],yjoints3d[3],zjoints3d[3]),(xjoints3d[5],yjoints3d[5],zjoints3d[5])))
+        anglesr.append(180-tools.angle((xjoints3d[0],yjoints3d[0],zjoints3d[0]),(xjoints3d[2],yjoints3d[2],zjoints3d[2]),(xjoints3d[4],yjoints3d[4],zjoints3d[4])))
         
         
         # angle 2d
@@ -186,7 +211,42 @@ def show_angle3d(nb_vedio, frames):
     
     ax2.plot(frames, anglesr, color='r')#, marker='.')
     #for i in range(50): y1.append(i) # 每迭代一次，将i放入y1中画出来 ax.cla() # 清除键 ax.bar(y1, label='test', height=y1, width=0.3) ax.legend() plt.pause(0.1)
+    data2d={}
+    data={}
+    data2dd={}
+    data2dd['frames']=frames
+    data2d['frames']=frames
+    data['frames']=frames
+    data['kangle_l']=anglesl
+    data['kangle_r']=anglesr
+    j=['rak','lak','rkn','lkn','ras','las','rwr','lwr','rel','lel','rsh','lsh','head']   
+    
+    for p in range(13):
+        data['x_'+j[p]]=points3dx[p]
+        data['y_'+j[p]]=points3dy[p]
+        data['z_'+j[p]]=points3dz[p]
+        data2d['x_'+j[p]]=points2dx[p]
+        data2d['y_'+j[p]]=points2dy[p]
+        data2dd['x_'+j[p]]=points2ddx[p]
+        data2dd['y_'+j[p]]=points2ddy[p]
+        data=pd.DataFrame(data)
+        data2d=pd.DataFrame(data2d)
+        data2dd=pd.DataFrame(data2dd)
 
+    if frames[0]>250:
+        data.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_joints_3DKinect_back.csv',encoding='gbk')
+        data2d.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_joints_2DColor_back.csv',encoding='gbk')        
+        data2dd.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_joints_2DDepth_back.csv',encoding='gbk')
+        #data1=pd.DataFrame({'frame':frames, 'angle_left':anglesl, 'angle_right':anglesr})
+        #data1.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_angles_3DKinect_back.csv',encoding='gbk')
+    
+    else:
+        data2dd.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_joints_2DDepth_front.csv',encoding='gbk')
+        data2d.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_joints_2DColor_front.csv',encoding='gbk')
+        data.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_joints_3DKinect_front.csv',encoding='gbk')
+        #data1=pd.DataFrame({'frame':frames, 'angle_left':anglesl, 'angle_right':anglesr})
+        #data1.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_angles_3DKinect_front.csv',encoding='gbk')
+    
 
 def show_gt(nb_video, frames):
     
@@ -201,30 +261,30 @@ def show_gt(nb_video, frames):
     print(filename2)
     data1=pd.read_csv('testVedios/test'+nb_video+'/'+filename1)
     data2=pd.read_csv('testVedios/test'+nb_video+'/'+filename2)
-    data3= pd.read_csv('testVedios/test'+nb_video+'/tempstams.csv')
+    #data3= pd.read_csv('testVedios/test'+nb_video+'/tempstams.csv')
 
     data1=(pd.DataFrame(data1))
     data2=(pd.DataFrame(data2))
-    data3=(pd.DataFrame(data3))
-    frame=data3['frame']
-    time=data3['time']
+    #data3=(pd.DataFrame(data3))
+    #frame=data3['frame']
+    #time=data3['time']
     times=[]
-
+    '''
     for i in time:
         i=round((i-44471900000)/10)
         times.append(i)
-    '''
+    
     print(frames[0])
     fields=range(times[frames[0]]-350, times[frames[1]]-350)
     print(fields)
     '''
 
-    angleX_l=data1['X']
+    angleX_l=data1['X_ag']
     
     angleY=data1['Y']
     angleZ=data1['Z']
     field=data1['field']
-    angleX_r=data2['X']
+    angleX_r=data2['X_ag']
 
     fig=plt.figure()
     ax=fig.add_subplot(211)   
@@ -239,8 +299,8 @@ def show_gt(nb_video, frames):
     ax2.set_ylabel('Angle')
     # ax.set_xticks([])
     # axleft.set_yticks([])
-    ax.plot(field, angleX_l, color='b', marker='.', label='Angle_X')
-    ax2.plot(field, angleX_r, color='r', marker='.', label='Angle_X')
+    ax.plot(field, angleX_l, color='b', label='Angle_X')
+    ax2.plot(field, angleX_r, color='r', label='Angle_X')
     #ax.plot(field, angleY, color='g', marker='.', label='Angle_Y')
     #ax.plot(field, angleZ, color='b', marker='.', label='Angle_Z')
     
@@ -255,9 +315,10 @@ if __name__=="__main__":
     frames=[]
     frames.append(int(sys.argv[3]))
     frames.append(int(sys.argv[4]))
-    #show_gt(str(nb_video), frames)
-    show_result(nb_video, point, frames)
-    show_angle3d(str(nb_video),frames)
+    
+    #show_result(nb_video, point, frames)
+    #show_angle3d(str(nb_video),frames)
+    show_gt(str(nb_video), frames)
     plt.show()
     sys.exit(1)
     

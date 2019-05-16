@@ -16,7 +16,7 @@ list_frames=d['frames']
 
 for j in tqdm(range(14)):
     if(j<=12):
-        data={'frame':[], 'x2d_'+str(j+1):[], 'y2d_'+str(j+1):[],'x3d_'+str(j+1):[], 'y3d_'+str(j+1):[],'z3d_'+str(j+1):[]}
+        data={'frame':[], 'x_rak':[], 'y2d_'+str(j+1):[],'x3d_'+str(j+1):[], 'y3d_'+str(j+1):[],'z3d_'+str(j+1):[]}
         for i in range(len(list_frames)):    
             data['frame'].append(i+1)
             if (list_frames[i]==[]):

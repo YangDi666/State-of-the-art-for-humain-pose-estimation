@@ -41,7 +41,7 @@ def his_image(im, size, joint, data):
     print(len(ng))
   
 
-    ngh=[0]*700
+    ngh=[0]*750
     for h in set(ng):
         ngh[h]=ng.count(h)
 
@@ -107,6 +107,7 @@ def his_video(nb_video, frames):
         dis_lthi_m.append(hist[1])
 
     fig=plt.figure()
+    '''
     ax=fig.add_subplot(222)
     ax.set_title('7*7 Hist_MAX_Left Ankle(blue), Knee(orange), Thigh(green)')
     ax.plot(range(frames[0], frames[1]), dis_lankle)
@@ -131,6 +132,14 @@ def his_video(nb_video, frames):
     ax4.plot(range(frames[0], frames[1]), dis_lankle_mm)
     ax4.plot(range(frames[0], frames[1]), dis_lknee_mm)
     ax4.plot(range(frames[0], frames[1]), dis_lthi_mm)
+    '''
+
+    ax=fig.add_subplot(111)
+    ax.set_title('7*7 Hist_MAX_Left Ankle(blue), Knee(orange), Thigh(green)')
+    ax.plot(range(frames[0], frames[1]), dis_lankle)
+    ax.plot(range(frames[0], frames[1]), dis_lknee)
+    ax.plot(range(frames[0], frames[1]), dis_lthi)
+    
     plt.show()
 
-his_video('2', [70, 145])
+his_video('2', [50, 150])
