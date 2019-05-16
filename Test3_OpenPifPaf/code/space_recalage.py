@@ -128,8 +128,8 @@ def space_recalage(nb_video, aix, frames, direction):
         t1=time[frames[0]:frames[1]]
         errsl=[]
         dy=[]
-
-        with open('testVideos/test'+nb_video+'/time_recalage.json') as json_data:
+        with open('../../semaine11/time calibration/testVideos/test'+nb_video+'/time_recalage_general.json') as json_data:
+        #with open('testVideos/test'+nb_video+'/time_recalage.json') as json_data:
             jsondata = json.load(json_data)
         if direction=='f':
             dt=jsondata['dt1']
@@ -183,7 +183,7 @@ def space_recalage(nb_video, aix, frames, direction):
             dm_l.remove(l)
     dm=sum(dm_l)/len(dm_l)
     print('Mean : ', dm)
-    plt.show()
+    #plt.show()
     return output, dm
    
 

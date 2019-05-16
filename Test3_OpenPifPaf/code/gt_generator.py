@@ -49,7 +49,8 @@ data1=pd.read_csv('testVideos/test'+nb_video+'/'+filename1)
 data2=pd.read_csv('testVideos/test'+nb_video+'/'+filename2)
 data1=(pd.DataFrame(data1))
 data2=(pd.DataFrame(data2))
-with open('testVideos/test'+nb_video+'/time_recalage.json') as json_data:
+with open('../../semaine11/time calibration/testVideos/test'+nb_video+'/time_recalage_general.json') as json_data:   
+#with open('testVideos/test'+nb_video+'/time_recalage.json') as json_data:
     jsondataT = json.load(json_data)
 if direction=='Front':
     dt=jsondataT['dt1']
