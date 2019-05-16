@@ -1,135 +1,136 @@
 import cv2
-import matplotlib.pylab as plt
 import numpy as np
-import math
-from mpl_toolkits.mplot3d import Axes3D
-import json 
+import matplotlib.pyplot as plt
 import tools
+import json
+import pylab as pl
+import scipy.signal as signal
 import os
 import re
-from matplotlib.animation import FuncAnimation 
 
-'''
-def init(): 
-    ax.set_xlim(0, 2*np.pi)
-    ax.set_ylim(-1, 1) 
-    return ln,
-def update(frame): 
-    xdata.append(frame) 
-    ydata.append(np.sin(frame)) 
-    ln.set_data(xdata, ydata) 
-    return ln,
-'''
+def his_image(im, size, joint, data):
 
-def show_angle3d(nb_video, frames): 
 
-    files=os.listdir('testVedios/test'+nb_video+'/') 
+    joints={'lankle': 13, 'rankle': 10 ,'lknee': 12, 'rknee': 9, 'lthi': 11, 'rthi': 8}
+    # médian
+    #img_m=cv2.medianBlur(im,5)
+    #font=cv2.FONT_HERSHEY_SIMPLEX
+    img_m=im[0:828, 0:512]
+    '''
+    img_m_h=img_m[0:424, 0:512]
+    img_m_b=img_m[424:828, 0:512]
+    for i in range(424):
+        for j in range(512):
+            img_m[i,j]=img_m_h[i,j]*256/6+img_m_b[i,j]
+    '''
+    xjoints=data[0:18]
+    yjoints=data[18:]
+    x=xjoints[joints[joint]]
+    y=yjoints[joints[joint]] 
+    (x_d, y_d)=tools.RGBtoD((x, y))
+    ndg_h1=img_m[y_d, x_d][0]# Original Depth_high
+    ndg_b1=img_m[y_d+424, x_d][0]# Depth Original_low
+    ng=[]
+    #print(img_m[(y_d-int((size-1)/2)):(y_d+int((size-1)/2)),(x_d-int((size-1)/2)):(x_d+int((size-1)/2))] )
+    for i in range(y_d-int((size-1)/2), y_d+int((size-1)/2)+1):
+        for j in range(x_d-int((size-1)/2), x_d+int((size-1)/2)+1):
+            z0=(img_m[i,j]*256/6+img_m[i+424,j])[0]/10
+            if z0>120 and z0<750:
+                ng.append(int(round(z0)))
+    
+    print(len(ng))
+  
+
+    ngh=[0]*750
+    for h in set(ng):
+        ngh[h]=ng.count(h)
+
+    zm=ngh.index(max(ngh))*10
+    print(zm)
+
+    return (zm, ndg_h1*256/6+ndg_b1)
+
+def his_video(nb_video, frames):
+    files=os.listdir('testVideos/test'+nb_video+'/') 
     for i in files:
         if (len(re.findall('.*C\.json', i))!=0):
             filejson=i
         if (len(re.findall('.*D.mp4', i))!=0):
             filedepth=i
-        if (len(re.findall('.*C.mp4', i))!=0):
-            filecolor=i
-    print(filejson)
-    print(filedepth)
-    print(filecolor)
-    fig=plt.figure()
-    ax=fig.add_subplot(121, projection='3d')
-    ax.set_title('3D claud points')
-    ax2=fig.add_subplot(122)
-        
-    # fig=plt.figure()
-    ax2.set_title('2D color image')
-    v_c=cv2.VideoCapture('testVedios/test'+nb_video+'/'+filecolor)
-
-    with open('testVedios/test'+nb_video+'/'+filejson) as json_data:
+    v=cv2.VideoCapture('testVideos/test'+nb_video+'/'+filedepth)
+    with open('testVideos/test'+nb_video+'/'+filejson) as json_data:
         d = json.load(json_data)
-    v=cv2.VideoCapture('testVedios/test'+nb_video+'/'+filedepth)
 
-    anglesl=[]
-    anglesr=[]
+    v.set(cv2.CAP_PROP_POS_FRAMES, frames[0])
+    dis_lankle=[]
+    dis_lankle0=[]
+    dis_lknee=[]
+    dis_lknee0=[]
+    dis_lthi=[]
+    dis_lthi0=[]
 
-    for t in range(frames[0],frames[1]):
-        #print(t)
-        v.set(cv2.CAP_PROP_POS_FRAMES, t)
-        ret, im=v.read()
-        v_c.set(cv2.CAP_PROP_POS_FRAMES, t)
-        retc, im_c=v_c.read()
+    dis_lankle_m=[]
+    dis_lankle_mm=[]
+    dis_lknee_m=[]
+    dis_lknee_mm=[]
+    dis_lthi_m=[]
+    dis_lthi_mm=[]
 
+    for frame in range(frames[0], frames[1]):
+        ret, im=v.read()          
+        data=d['frames'][frame][0]['pose2d']
+
+        hist=his_image(im, 7, 'lankle', data)
+        dis_lankle.append(hist[0])
+        dis_lankle0.append(hist[1])
+
+        hist=his_image(im,7, 'lknee', data)
+        dis_lknee.append(hist[0])
+        dis_lknee0.append(hist[1])
+
+        hist=his_image(im, 7, 'lthi', data)
+        dis_lthi.append(hist[0])
+        dis_lthi0.append(hist[1])
         # médian
         img_m=cv2.medianBlur(im,5)
         font=cv2.FONT_HERSHEY_SIMPLEX
-        
-        x=[]
-        y=[]
-        z=[]
-        
-        # show 3d claud points
-        for i in range(600,1000,3):
-            for j in range(200,960,6):
-                a=tools.RGBto3D((i,j),img_m)
-                x.append(a[0])
-                y.append(a[1])
-                z.append(a[2])
-        ax.scatter(x,z,y, s=1)
-        
-        # show 3d joints
-        if len(d['frames'][t])!=0:
-            xjoints=d['frames'][t][0]['pose2d'][:13]
-            yjoints=d['frames'][t][0]['pose2d'][13:]
-            xjoints_3d=[]
-            yjoints_3d=[]
-            zjoints_3d=[]
+        hist=his_image(img_m, 7, 'lankle', data)
+        dis_lankle_mm.append(hist[0])
+        dis_lankle_m.append(hist[1])
 
-            for i in range(13):
-                joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m)
-                xjoints_3d.append(joints[0])
-                yjoints_3d.append(joints[1])
-                zjoints_3d.append(joints[2])
+        hist=his_image(img_m,7, 'lknee', data)
+        dis_lknee_mm.append(hist[0])
+        dis_lknee_m.append(hist[1])
 
-        ax.scatter(xjoints_3d, zjoints_3d, yjoints_3d , color='r')
-        '''
-        anglesl.append(180-tools.angle((xjoints_3d[1],yjoints_3d[1],zjoints_3d[1]),(xjoints_3d[3],yjoints_3d[3],zjoints_3d[3]),(xjoints_3d[5],yjoints_3d[5],zjoints_3d[5])))
-        anglesr.append(180-tools.angle((xjoints_3d[0],yjoints_3d[0],zjoints_3d[0]),(xjoints_3d[2],yjoints_3d[2],zjoints_3d[2]),(xjoints_3d[4],yjoints_3d[4],zjoints_3d[4])))
-        gt=(54.115166+1100, -1168.320923+27124, 484.712952+1100)
-        #ax.scatter(gt[0],gt[1],gt[2], color='y')
-        print(xjoints_3d[3], zjoints_3d[3], yjoints_3d[3])
-        print(anglesl)
-        print(anglesr)
-        '''
-        # show 3d skelecton
-        ax.plot([xjoints_3d[k] for k in [0,2,4,5,3,1]], [zjoints_3d[k] for k in [0,2,4,5,3,1]], [yjoints_3d[k] for k in [0,2,4,5,3,1]], color='orange' )
-        ax.plot([xjoints_3d[k] for k in [6,8,10,11,9,7]], [zjoints_3d[k] for k in [6,8,10,11,9,7]], [yjoints_3d[k] for k in [6,8,10,11,9,7]], color='orange' )
-        ax.plot([xjoints_3d[12] , (xjoints_3d[4]+xjoints_3d[5])/2], [zjoints_3d[12], (zjoints_3d[4]+zjoints_3d[5])/2], [yjoints_3d[12], (yjoints_3d[4]+yjoints_3d[5])/2], color='orange' )
-        
-        # show color image and the joints 
-        ax2.imshow(im_c)    
-        ax2.plot([xjoints[k] for k in [0,2,4,5,3,1]], [yjoints[k] for k in [0,2,4,5,3,1]] )
-        ax2.plot([xjoints[k] for k in [6,8,10,11,9,7]], [yjoints[k] for k in [6,8,10,11,9,7]])
-        ax2.plot([xjoints[12] , (xjoints[4]+xjoints[5])/2], [yjoints[12], (yjoints[4]+yjoints[5])/2])
-        ax2.scatter(xjoints, yjoints, color='r', s=5)
-        
-        # show the joints' positions
-        for a in range(0, 12, 2):
-                ax2.text(xjoints[a]-500, yjoints[a], '(%.1f, %.1f, %.1f)'%(xjoints_3d[a],yjoints_3d[a], zjoints_3d[a]), color='blue')
-        for a in range(1, 13, 2):
-                ax2.text(xjoints[a]+50, yjoints[a], '(%.1f, %.1f, %.1f)'%(xjoints_3d[a],yjoints_3d[a], zjoints_3d[a]), color='orange')
-        ax2.text(xjoints[12]-10, yjoints[12]-10, '(%.1f, %.1f, %.1f)'%(xjoints_3d[12],yjoints_3d[12], zjoints_3d[12]), color='g')
-   
-        '''
-        print(xjoints)
-        print(yjoints)
-        print(zjoints)
-    ax2.scatter(xjoints, zjoints, yjoints, color='r')
-    '''    
-        
-    v.release()
-    frames=range(frames[0],frames[1])
-    #ax.plot(frames, anglesl)
-    #ax2.plot(frames, anglesr)
+        hist=his_image(img_m, 7, 'lthi', data)
+        dis_lthi_mm.append(hist[0])
+        dis_lthi_m.append(hist[1])
+
+    fig=plt.figure()
+    ax=fig.add_subplot(222)
+    ax.set_title('7*7 Hist_MAX_Left Ankle(blue), Knee(orange), Thigh(green)')
+    ax.plot(range(frames[0], frames[1]), dis_lankle)
+    ax.plot(range(frames[0], frames[1]), dis_lknee)
+    ax.plot(range(frames[0], frames[1]), dis_lthi)
+    
+    ax2=fig.add_subplot(221)
+    ax2.set_title('7*7 Original_Left Ankle(blue), Knee(orange), Thigh(green) ')
+    ax2.plot(range(frames[0], frames[1]), dis_lankle0)
+    ax2.plot(range(frames[0], frames[1]), dis_lknee0)
+    ax2.plot(range(frames[0], frames[1]), dis_lthi0)
+    
+    ax3=fig.add_subplot(223)
+    ax3.set_title('7*7 Median_Left Ankle(blue), Knee(orange), Thigh(green) ')
+    ax3.plot(range(frames[0], frames[1]), dis_lankle_m)
+    ax3.plot(range(frames[0], frames[1]), dis_lknee_m)
+    ax3.plot(range(frames[0], frames[1]), dis_lthi_m)
+    
+
+    ax4=fig.add_subplot(224)
+    ax4.set_title('7*7 Median+Max_Left Ankle(blue), Knee(orange), Thigh(green)')
+    ax4.plot(range(frames[0], frames[1]), dis_lankle_mm)
+    ax4.plot(range(frames[0], frames[1]), dis_lknee_mm)
+    ax4.plot(range(frames[0], frames[1]), dis_lthi_mm)
     plt.show()
 
-#for frame in range(100,150):
-frame=180
-show_angle3d('1', [frame, frame+1])
+his_video('2', [70, 135])

@@ -11,125 +11,46 @@ from tqdm import tqdm
 import os
 import re
 from scipy import signal
-
-
-def show_result(nb_video, point, frames):
-    result=pd.read_csv('testVideos/test'+str(nb_video)+'/test'+str(nb_video)+'_OpenPose_'+point+'.csv')
-    # print(pd.DataFrame(result))
-    
-    fig=plt.figure()
-
-    if(point=='angles'):
-    
-        ax_left=fig.add_subplot(211)    
-        ax_left.set_title('3d OpenPose')
-
-        ax_left.set_xlabel('Frame')
-        ax_left.set_ylabel('Angle_left')
-        # ax_left.set_xticks([])
-        # ax_left.set_yticks([])
-        angles=[]
-        for i in result['angle_left'][frames[0]:frames[1]]:
-            if i == 'NO':
-                i=last
-            last=i    
-            angles.append(180-float(i))   
-        ax_left.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(angles), color='b')#, marker='.')
-       
-        ax_right=fig.add_subplot(212)
-        ax_right.set_xlabel('Frame')
-        ax_right.set_ylabel('Angle_right')
-        # ax_right.set_xticks([])
-        # ax_right.set_yticks([])
-        angles=[]
-        for i in result['angle_right'][frames[0]:frames[1]]:
-            if i == 'NO':
-                i=last
-            last=i    
-            angles.append(180-float(i))   
-        
-        # ax_left.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(angles), color='r', marker='.')
-        ax_right.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(angles), color='r')#, marker='.')
-
-        #plt.show()
-
-    else:
-    
-        ax_position=fig.add_subplot(211)  
-        ax_position.set_title('x and y of '+point)
-        ax_position.set_xlabel('Frame')
-        ax_position.set_ylabel('Position')
-        
-        x=[]
-        y=[]
-        for i in result['x2d_'+point[5:]][frames[0]:frames[1]]:
-            if i == 'NO':
-                i=last
-            last=i    
-            x.append(float(i))  
-        for i in result['y2d_'+point[5:]][frames[0]:frames[1]]:
-            if i == 'NO':
-                i=last
-            last=i    
-            y.append(float(i))   
-            
-        ax_position.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(x), label="x", color='b')#, marker='.')
-        ax_position.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(y), label="y", color='r')#, marker='.')
-       
-        ax_precision=fig.add_subplot(212)  
-        ax_precision.set_title('Precision of '+point)
-        ax_precision.set_xlabel('Frame')
-        ax_precision.set_ylabel('Precision')
-
-        pre=[]
-
-        for i in range(frames[0],frames[1]):
-            if result['x2d_'+point[5:]][i] == 'NO':
-                result['x2d_'+point[5:]][i]=last_x
-            last_x=float(result['x2d_'+point[5:]][i])
-
-            if result['y2d_'+point[5:]][i] == 'NO':
-                result['y2d_'+point[5:]][i]=last_y
-            last_y=float(result['y2d_'+point[5:]][i])
-
-            # precision=get_distance((last_x, last_y),(gt_x, gt_y))
-            # pre.append(precision)
-            # pre=normal(pre)
-
-        # ax_precision.plot(np.array(result['frame'][frames[0]:frames[1]]),np.array(pre), label="precision", color='b', marker='.')
-        plt.title('Precision of '+point)
-
+      
 def get_distance(p1,p2):   
     return math.sqrt(sum([(p1[i]-p2[i])**2 for i in range(len(p1))]))
 
 def normal(l):
     return [(i-min(l))/(max(l)-min(l)) for i in l]
 
-def show_angle3d(nb_vedio, frames): 
+def show_angle3d(nb_video, frames): 
 
-    files=os.listdir('testVideos/test'+nb_vedio+'/') 
+    files=os.listdir('testVideos/test'+nb_video+'/') 
     for i in files:
         if (len(re.findall('.*C\.json', i))!=0):
             filejson=i
         if (len(re.findall('.*D.mp4', i))!=0):
             filedepth=i
-
+            number=filedepth[:-5]
+    print(number)
     print(filejson)
     fig=plt.figure()
     ax=fig.add_subplot(211)
     ax2=fig.add_subplot(212)
-    ax.set_title('3d kinect OpenPose')
+    ax.set_title('3d kinect OpenPose_Original')
     ax.set_xlabel('Frame')
     ax.set_ylabel('Angle_left')
     ax2.set_xlabel('Frame')
     ax2.set_ylabel('Angle_right')
 
-    with open('testVideos/test'+nb_vedio+'/'+filejson) as json_data:
+    with open('testVideos/test'+nb_video+'/'+filejson) as json_data:
         d = json.load(json_data)
-    v=cv2.VideoCapture('testVideos/test'+nb_vedio+'/'+filedepth)
+    v=cv2.VideoCapture('testVideos/test'+nb_video+'/'+filedepth)
 
     anglesl=[]
     anglesr=[]
+    points3dx=[[] for p in range(18)]
+    points3dy=[[] for p in range(18)]
+    points3dz=[[] for p in range(18)]
+    points2dx=[[] for p in range(18)]
+    points2dy=[[] for p in range(18)]
+    points2ddx=[[] for p in range(18)]
+    points2ddy=[[] for p in range(18)]
 
     for t in tqdm(range(frames[0],frames[1])):
         #print(t)
@@ -156,22 +77,41 @@ def show_angle3d(nb_vedio, frames):
         #ax.scatter(x,z,y)
         '''
         if len(d['frames'][t])!=0:
-            xjoints=d['frames'][t][0]['pose2d'][:18]
-            yjoints=d['frames'][t][0]['pose2d'][18:]
-            zjoints=[]
+            xjoints2d=d['frames'][t][0]['pose2d'][:18]
+            yjoints2d=d['frames'][t][0]['pose2d'][18:]
+            
+            zjoints3d=[]
+            xjoints3d=[]
+            yjoints3d=[]
+
+            xjoints2dd=[]
+            yjoints2dd=[]
     
             for i in range(18):
-                joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m)
-                #joints=tools.RGBto3D((xjoints[i], yjoints[i]), im)
+                joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im, True, 7)
+                #joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im)
                 #joints=tools.RGBto3D((xjoints[i], yjoints[i]), im, True,5)
                 #joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m)
-                xjoints[i]=joints[0]
-                yjoints[i]=joints[1]
-                zjoints.append(joints[2])
+                joints2dd=tools.RGBtoD((xjoints2d[i], yjoints2d[i]))
+                
+                xjoints3d.append(joints[0])
+                yjoints3d.append(joints[1])
+                zjoints3d.append(joints[2])
+                xjoints2dd.append(joints2dd[0])
+                yjoints2dd.append(joints2dd[1])
 
-        anglesl.append(180-tools.angle((xjoints[11], yjoints[11],zjoints[11]),(xjoints[12], yjoints[12],zjoints[12]),(xjoints[13], yjoints[13],zjoints[13])))
-        anglesr.append(180-tools.angle((xjoints[8], yjoints[8],zjoints[8]),(xjoints[9], yjoints[9],zjoints[9]),(xjoints[10], yjoints[10],zjoints[10])))
+
+        anglesl.append(180-tools.angle((xjoints3d[11], yjoints3d[11],zjoints3d[11]),(xjoints3d[12], yjoints3d[12],zjoints3d[12]),(xjoints3d[13], yjoints3d[13],zjoints3d[13])))
+        anglesr.append(180-tools.angle((xjoints3d[8], yjoints3d[8],zjoints3d[8]),(xjoints3d[9], yjoints3d[9],zjoints3d[9]),(xjoints3d[10], yjoints3d[10],zjoints3d[10])))
         
+        for p in range(18):  
+            points3dx[p].append(xjoints3d[p])
+            points3dy[p].append(yjoints3d[p])
+            points3dz[p].append(zjoints3d[p])
+            points2dx[p].append(xjoints2d[p])
+            points2dy[p].append(yjoints2d[p])
+            points2ddx[p].append(xjoints2dd[p])
+            points2ddy[p].append(yjoints2dd[p])
         
         # angle 2d
         # anglesl.append(180-tools.angle((yjoints[1],zjoints[1]),(yjoints[3],zjoints[3]),(yjoints[5],zjoints[5])))
@@ -190,13 +130,46 @@ def show_angle3d(nb_vedio, frames):
     #anglesr = signal.filtfilt(b, a, anglesr)   
     frames=range(frames[0],frames[1])
     ax.plot(frames, anglesl)
-    print(anglesl)
-    print(anglesr)
     ax2.plot(frames, anglesr, color='r')
+    data2d={}
+    data={}
+    data2dd={}
+    data2dd['frames']=frames
+    data2d['frames']=frames
+    data['frames']=frames
+    data['kangle_l']=anglesl
+    data['kangle_r']=anglesr
+    j=['head','nk','rsh','rel','rwr','lsh','lel','lwr','ras','rkn','rak','las','lkn','lak','reye','leye','rear','lear']   
+    
+    for p in range(18):
+        data['x_'+j[p]]=points3dx[p]
+        data['y_'+j[p]]=points3dy[p]
+        data['z_'+j[p]]=points3dz[p]
+        data2d['x_'+j[p]]=points2dx[p]
+        data2d['y_'+j[p]]=points2dy[p]
+        data2dd['x_'+j[p]]=points2ddx[p]
+        data2dd['y_'+j[p]]=points2ddy[p]
+        data=pd.DataFrame(data)
+        data2d=pd.DataFrame(data2d)
+        data2dd=pd.DataFrame(data2dd)
 
+    if frames[0]>250:
+        data.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_3DKinect_back.csv',encoding='gbk')
+        data2d.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_2DColor_back.csv',encoding='gbk')        
+        data2dd.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_2DDepth_back.csv',encoding='gbk')
+        #data1=pd.DataFrame({'frame':frames, 'angle_left':anglesl, 'angle_right':anglesr})
+        #data1.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_angles_3DKinect_back.csv',encoding='gbk')
+    
+    else:
+        data2dd.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_2DDepth_front.csv',encoding='gbk')
+        data2d.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_2DColor_front.csv',encoding='gbk')
+        data.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_3DKinect_front.csv',encoding='gbk')
+        #data1=pd.DataFrame({'frame':frames, 'angle_left':anglesl, 'angle_right':anglesr})
+        #data1.to_csv('testVedios'+'/test'+nb_vedio+'/'+number+'_LCR-NET_angles_3DKinect_front.csv',encoding='gbk')
+    
 def show_gt(nb_video, frames):
     
-    files=os.listdir('testVedios/test'+nb_video+'/') 
+    files=os.listdir('testVideos/test'+nb_video+'/') 
     for i in files:
         if (len(re.findall('julia104.*'+'left', i))!=0):
             filename1=i
