@@ -1,4 +1,4 @@
-# CMU-OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Field
+# CMU - OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Field
 ## Introduction
 [OpenPose](https://arxiv.org/pdf/1812.08008.pdf) of CMU presents an effective method for estimating multi-person pose with a competitive performance on several public repositories. It presents the first bottom-up representation of association scores via Part Affinity Fields (PAFs), a set of 2D vector fields encoding the location and orientation of members in the image domain.
 
