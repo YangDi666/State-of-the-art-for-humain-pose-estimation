@@ -4,14 +4,14 @@
 Framework: Caffe, Cuda
 
 Method: Bottom-up
-• The entire image as entered for a CNN to jointly predict.
-• The confidence map for the detection of the joints of the body and PAF for the association of the joints.
-• Bipartite pairings of joints to the body.
+- The entire image as entered for a CNN to jointly predict.
+- The confidence map for the detection of the joints of the body and PAF for the association of the joints.
+- Bipartite matches of joints to the body.
 
 Dataset: MPII human multi-person, COCO keypoint challenge dataset
 
 Characteristics
-• More effective when the number of people is large
-• 2D
-• 18 body joints or 25 joints with feet.
-• Nvidia GTX1080Ti GPU processing time for our data: about 1.9 FPS
+- More effective when the number of people is large
+- 2D
+- 18 body joints or 25 joints with feet.
+- Nvidia GTX1080Ti GPU processing time for our data: about 1.9 FPS
