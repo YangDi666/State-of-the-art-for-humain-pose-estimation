@@ -114,16 +114,16 @@ def show_angle3d(nb_vedio, frames):
         if (len(re.findall('.*D.mp4', i))!=0):
             filedepth=i
             number=filedepth[:-5]
-        #if (len(re.findall('_distance_data.csv', i))!=0):
-         #   filedis=i
+        if (len(re.findall('_LCR-NET_joints_3DKinect_front.csv', i))!=0):
+            filedis=i
     print(number)
-    #print(filedis)
+    print(filedis)
     print(filejson)
-    #disdata=pd.DataFrame(pd.read_csv('testVedios/test'+nb_vedio+'/'+filedis))
+    disdata=pd.DataFrame(pd.read_csv('testVedios/test'+nb_vedio+'/'+filedis))
     fig=plt.figure()
     ax=fig.add_subplot(211)
     ax2=fig.add_subplot(212)
-    ax.set_title('3d kinect LCR-NET_Improved')
+    ax.set_title('3d kinect LCR-NET_Original')
     ax.set_xlabel('Frame')
     ax.set_ylabel('Angle_left')
     ax2.set_xlabel('Frame')
@@ -179,8 +179,8 @@ def show_angle3d(nb_vedio, frames):
     ###!!!!!!!!!11111!!!!
             leg=['z_rak','z_lak','z_rkn','z_lkn','z_ras','z_las']
             for i in range(13):
-                if i<=-5:
-                    z3d=float(disdata[leg[i]][disdata['frame']==t])
+                if i<=5:
+                    z3d=float(disdata[leg[i]][disdata['frames']==t])
                     print(z3d)
                     joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i], z3d), im, t)
                     xjoints3d.append(joints[0])
@@ -255,9 +255,9 @@ def show_angle3d(nb_vedio, frames):
     #anglesl = signal.filtfilt(b, a, anglesl) 
     #anglesr = signal.filtfilt(b, a, anglesr)   
     frames=range(frames[0],frames[1])
-    ax.plot(frames, anglesl)
+    ax.plot(frames, anglesl, marker='.')
     
-    ax2.plot(frames, anglesr, color='r')#, marker='.')
+    ax2.plot(frames, anglesr, color='r',  marker='.')#, marker='.')
     #for i in range(50): y1.append(i) # 每迭代一次，将i放入y1中画出来 ax.cla() # 清除键 ax.bar(y1, label='test', height=y1, width=0.3) ax.legend() plt.pause(0.1)
     data2d={}
     data={}

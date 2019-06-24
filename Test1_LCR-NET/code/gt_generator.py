@@ -60,7 +60,7 @@ else:
     dt=jsondataT['dt2']
     with open('testVedios/test'+nb_video+'/space_recalage_back.json') as json_data:
         jsondataS = json.load(json_data)
-
+print('dt:', dt)
 field=data2['field']
 field=[i*10 for i in field]
 jsonfinal={'frame': []}
@@ -103,7 +103,28 @@ for arts in articulations:
 jsonfinal['frame']=tfl   
 #plt.plot(jsonfinal['frame'], jsonfinal['X_rag'], marker='.')
 #plt.show()
+jsonfinal['akdis']=[]
+jsonfinal['kndis']=[]
+jsonfinal['step']=[]
 
+for i in range(len(tfl)):
+    dak=(jsonfinal['Y_lak'][i]-jsonfinal['Y_rak'][i])
+    dkn=(jsonfinal['Y_lkn'][i]-jsonfinal['Y_rkn'][i])
+    jsonfinal['akdis'].append(dak)
+    jsonfinal['kndis'].append(dkn)
+
+    # Model : step automatic by Vicon!!!!!back front
+
+    if dkn<=0 and dak>-100:
+        jsonfinal['step'].append(0)
+    elif dak<=-100 and dkn<0:
+        jsonfinal['step'].append(1)
+    elif dkn>=0 and dak<100:
+        jsonfinal['step'].append(2)
+    elif dak>=100 and dkn>0:
+        jsonfinal['step'].append(3)
+    else:
+        jsonfinal['step'].append(-1)
 # save jsonfinal : gt 
 data=pd.DataFrame(jsonfinal)
 data.to_csv('testVedios'+'/test'+nb_video+'/'+number+'GT-Vicon_'+direction+'.csv', encoding='gbk')
@@ -112,7 +133,7 @@ print('GT_'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 # save jsonfifinal : gt transformée individuelle à Kinect par rapport de l'Algo
 jsonfifinal={}
 for joint in jsonfinal.keys():
-    if joint!='frame' and joint.find('ag')==-1:
+    if joint!='frame' and joint.find('ag')==-1 and joint.find('dis')==-1 and joint.find('step')==-1:
         new_pos=[]
         for jf in jsonfinal[joint]:
             jf=tools.VIto3D(jf, jsondataS, joint[0], joint[2:])
@@ -122,6 +143,7 @@ for joint in jsonfinal.keys():
         jj=jj.replace('X', 'x')
         jsonfifinal[jj]=new_pos
 jsonfifinal['frame']=tfl
+jsonfifinal['step']=jsonfinal['step']
 jsonfifinal['kangle_l']=[]
 jsonfifinal['kangle_r']=[]
 for i in range(len(tfl)):
@@ -135,7 +157,7 @@ print('GT_Kinect'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 # save jsonfififinal : gt transformée générale à Kinect par rapport de l'Algo
 jsonfififinal={}
 for joint in jsonfinal.keys():
-    if joint!='frame' and joint.find('ag')==-1:
+    if joint!='frame' and joint.find('ag')==-1 and joint.find('dis')==-1 and joint.find('step')==-1:
         new_pos_g=[]
         for jf in jsonfinal[joint]:
             jf=tools.VIto3D(jf, jsondataS, joint[0])
@@ -145,12 +167,14 @@ for joint in jsonfinal.keys():
         jj=jj.replace('X', 'x')
         jsonfififinal[jj]=new_pos_g
 jsonfififinal['frame']=tfl
+jsonfififinal['step']=jsonfinal['step']
 jsonfififinal['kangle_l']=[]
 jsonfififinal['kangle_r']=[]
+
 for i in range(len(tfl)):
     jsonfififinal['kangle_l'].append(180-tools.angle((jsonfififinal['x_las'][i],jsonfififinal['y_las'][i],jsonfififinal['z_las'][i]),(jsonfififinal['x_lkn'][i], jsonfififinal['y_lkn'][i],jsonfififinal['z_lkn'][i]),(jsonfififinal['x_lak'][i],jsonfififinal['y_lak'][i],jsonfififinal['z_lak'][i])))
     jsonfififinal['kangle_r'].append(180-tools.angle((jsonfififinal['x_ras'][i],jsonfififinal['y_ras'][i],jsonfififinal['z_ras'][i]),(jsonfififinal['x_rkn'][i], jsonfififinal['y_rkn'][i],jsonfififinal['z_rkn'][i]),(jsonfififinal['x_rak'][i],jsonfififinal['y_rak'][i],jsonfififinal['z_rak'][i])))
-
+    
 data=pd.DataFrame(jsonfififinal)
 data.to_csv('testVedios'+'/test'+nb_video+'/'+number+'_GT-Vicon_LCR-NET_3DKinect_'+direction+'_generalTF.csv', encoding='gbk')
 print('GT_Kinect_general'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
@@ -158,12 +182,13 @@ print('GT_Kinect_general'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 # save jsonfifififinal : gt à 2D Color Tf individuelle
 jsonfifififinal={}
 j=['rak','lak','rkn','lkn','ras','las','rwr','lwr','rel','lel','rsh','lsh']
-
+jsonfifififinal['frame']=tfl
 for joint in j:
     jsonfifififinal['x_'+joint]=[]
     jsonfifififinal['y_'+joint]=[]
     for i in range(len(tfl)):
-        (x,y)=tools.K3DtoRGB((jsonfifinal['x_'+joint][i], jsonfifinal['y_'+joint][i], jsonfifinal['z_'+joint][i]))
+        (x,y)=tools.K3DtoD((jsonfifinal['x_'+joint][i], jsonfifinal['y_'+joint][i], jsonfifinal['z_'+joint][i]))
+        (x,y)=tools.DtoRGB((x,y))
         jsonfifififinal['x_'+joint].append(x)
         jsonfifififinal['y_'+joint].append(y)  
 data=pd.DataFrame(jsonfifififinal)
@@ -171,11 +196,13 @@ data.to_csv('testVedios'+'/test'+nb_video+'/'+number+'_GT-Vicon_LCR-NET_2DColor_
 print('GT_Color_respective'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 # save jsonfififififinal : gt à 2D Color Tf générale
 jsonfififififinal={}
+jsonfififififinal['frame']=tfl
 for joint in j:
     jsonfififififinal['x_'+joint]=[]
     jsonfififififinal['y_'+joint]=[]
     for i in range(len(tfl)):
-        (x,y)=tools.K3DtoRGB((jsonfififinal['x_'+joint][i], jsonfififinal['y_'+joint][i], jsonfififinal['z_'+joint][i]))
+        (x,y)=tools.K3DtoD((jsonfififinal['x_'+joint][i], jsonfififinal['y_'+joint][i], jsonfififinal['z_'+joint][i]))
+        (x,y)=tools.DtoRGB((x,y))
         jsonfififififinal['x_'+joint].append(x)
         jsonfififififinal['y_'+joint].append(y)  
 data=pd.DataFrame(jsonfififififinal)
@@ -188,18 +215,47 @@ print('GT_Color_general'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 
 # show results
 fig=plt.figure()
-ax1=fig.add_subplot(111)
+ax1=fig.add_subplot(211)
 ax1.plot(tfl, jsonfinal['Y_lak'], marker='.', color='r')
 ax1.plot(tfl, jsonfifinal['z_lak'], marker='.', color='b')
 ax1.plot(tfl, jsonfififinal['z_lak'], marker='.', color='g')
 ax1.set_title('Left Ankle z (gt_r, Tfrespective_b, Tfgeneral_g)')
+ax3=fig.add_subplot(212)
+ax3.plot(tfl, jsonfinal['Y_rak'], marker='.', color='r')
+ax3.plot(tfl, jsonfifinal['z_rak'], marker='.', color='b')
+ax3.plot(tfl, jsonfififinal['z_rak'], marker='.', color='g')
+ax3.set_title('Right Ankle z (gt_r, Tfrespective_b, Tfgeneral_g)')
+
 
 
 fig2=plt.figure()
-ax2=fig2.add_subplot(111)
-ax2.plot(tfl, jsonfinal['X_lag'], marker='.', color='r')
-ax2.plot(tfl, jsonfifinal['kangle_l'], marker='.', color='b')
-ax2.plot(tfl, jsonfififinal['kangle_l'], marker='.', color='g')
-ax2.set_title('Left Angle (gt_r, Tfrespective_b, Tfgeneral_g)')
+ax2=fig2.add_subplot(211)
+final=pd.DataFrame(jsonfinal)
+ax2.scatter(final['frame'], final['Y_lak'], marker='.', c=final['step'])
+ax2.plot(final['frame'], final['Y_lak'], color='y', lw=0.1)
+for i in range(len(final['frame'])):
+    ax2.text(final['frame'][i], final['Y_lak'][i],str(final['step'][i]))
+#ax2.plot(tfl, jsonfifinal['kangle_l'], marker='.', color='b')
+#ax2.plot(tfl, jsonfififinal['kangle_l'], marker='.', color='g')
+#ax2.set_title('Left Angle (gt_r, Tfrespective_b,and joint.find('step')==-1 Tfgeneral_g)')
+ax2.set_title('Left Angle_gt')
+ax2.scatter(final['frame'], final['Y_rak'], marker='.', c=final['step'])
+ax2.plot(final['frame'], final['Y_rak'], color='r', lw=0.1)
+
+
+#for i in tfl:
+    #ax2.text(i,jsonfinal['X_lag'][i]+2, jsonfinal['step'], color='g')
+ax4=fig2.add_subplot(212)
+#ax4.scatter(final['frame'], final['X_rag'], marker='.', c=final['step']+1)
+ax4.plot(final['frame'], final['X_rag'], color='r', marker='.')
+
+ax4.plot(tfl, jsonfifinal['kangle_r'], marker='.', color='b')
+ax4.plot(tfl, jsonfififinal['kangle_r'], marker='.', color='g')
+ax4.set_title('Right Angle (gt_r, Tfrespective_b, Tfgeneral_g)')
+
+fig3=plt.figure()
+ax5=fig3.add_subplot(111)
+ax5.plot(tfl,jsonfinal['akdis'], marker='.')
+ax5.plot(tfl,jsonfinal['kndis'], marker='.')
 
 plt.show()

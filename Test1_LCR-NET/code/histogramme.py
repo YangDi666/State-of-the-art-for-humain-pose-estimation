@@ -7,8 +7,9 @@ import pylab as pl
 import scipy.signal as signal
 import os
 import re
+import pandas as pd
 
-def his_image(im, size, joint, data):
+def his_image(im, size, frame, joint, data):
 
 
     joints={'lankle': 1, 'rankle': 0, 'lknee': 3, 'rknee': 2, 'lthi': 5, 'rthi': 4}
@@ -27,7 +28,7 @@ def his_image(im, size, joint, data):
     yjoints=data[13:26]
     x=xjoints[joints[joint]]
     y=yjoints[joints[joint]] 
-    (x_d, y_d)=tools.RGBtoD((x, y))
+    (x_d, y_d)=tools.RGBtoD((x, y), frame)
     ndg_h1=img_m[y_d, x_d][0]# Original Depth_high
     ndg_b1=img_m[y_d+424, x_d][0]# Depth Original_low
     ng=[]
@@ -68,6 +69,7 @@ def his_video(nb_video, frames):
     dis_lknee0=[]
     dis_lthi=[]
     dis_lthi0=[]
+    dis_rankle=[]
 
     dis_lankle_m=[]
     dis_lankle_mm=[]
@@ -80,32 +82,44 @@ def his_video(nb_video, frames):
         ret, im=v.read()          
         data=d['frames'][frame][0]['pose2d']
 
-        hist=his_image(im, 7, 'lankle', data)
+        hist=his_image(im, 7, frame, 'lankle', data)
         dis_lankle.append(hist[0])
         dis_lankle0.append(hist[1])
 
-        hist=his_image(im,7, 'lknee', data)
+        hist=his_image(im,7, frame, 'lknee', data)
         dis_lknee.append(hist[0])
         dis_lknee0.append(hist[1])
 
-        hist=his_image(im, 7, 'lthi', data)
+        hist=his_image(im, 7, frame, 'lthi', data)
         dis_lthi.append(hist[0])
         dis_lthi0.append(hist[1])
+
+        hist=his_image(im, 7, frame, 'rankle', data)
+        dis_rankle.append(hist[0])
         # médian
         img_m=cv2.medianBlur(im,5)
         font=cv2.FONT_HERSHEY_SIMPLEX
-        hist=his_image(img_m, 7, 'lankle', data)
+        hist=his_image(img_m, 7, frame, 'lankle', data)
         dis_lankle_mm.append(hist[0])
         dis_lankle_m.append(hist[1])
 
-        hist=his_image(img_m,7, 'lknee', data)
+        hist=his_image(img_m,7, frame, 'lknee', data)
         dis_lknee_mm.append(hist[0])
         dis_lknee_m.append(hist[1])
 
-        hist=his_image(img_m, 7, 'lthi', data)
+        hist=his_image(img_m, 7, frame, 'lthi', data)
         dis_lthi_mm.append(hist[0])
         dis_lthi_m.append(hist[1])
 
+    b, a = signal.butter(8, 0.15, 'lowpass') 
+    dis_lankle = signal.filtfilt(b, a, dis_lankle) 
+    dis_rankle = signal.filtfilt(b, a, dis_rankle)   
+    d={}
+    d['frame']=range(frames[0], frames[1])
+    d['zdis_l']=dis_lankle
+    d['zdis_r']=dis_rankle
+    d=pd.DataFrame(d)
+    d.to_csv('testVedios/test'+nb_video+'/test'+nb_video+'_distance_data.csv')
     fig=plt.figure()
     '''
     ax=fig.add_subplot(222)
@@ -136,10 +150,12 @@ def his_video(nb_video, frames):
 
     ax=fig.add_subplot(111)
     ax.set_title('7*7 Hist_MAX_Left Ankle(blue), Knee(orange), Thigh(green)')
-    ax.plot(range(frames[0], frames[1]), dis_lankle)
-    ax.plot(range(frames[0], frames[1]), dis_lknee)
-    ax.plot(range(frames[0], frames[1]), dis_lthi)
+    ax.plot(range(frames[0], frames[1]), dis_lankle, marker='.')
+    ax.plot(range(frames[0], frames[1]), dis_rankle, marker='.')
+
+    #ax.plot(range(frames[0], frames[1]), dis_lknee)
+    #ax.plot(range(frames[0], frames[1]), dis_lthi)
     
     plt.show()
 
-his_video('2', [50, 150])
+his_video('3', [50, 150])

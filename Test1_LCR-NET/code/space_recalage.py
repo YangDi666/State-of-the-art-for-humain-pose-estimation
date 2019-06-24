@@ -30,7 +30,7 @@ def space_recalage(nb_video, aix, frames, direction):
             keywords_file12='hugo'+str(101+2*(int(nb_video)-14))+'.*'
     files=os.listdir('testVedios/test'+nb_video+'/') 
     for i in files:
-        if (len(re.findall('.*joints_3DKinect_'+direction+'.*.csv', i))!=0):
+        if (len(re.findall('.*joints_3DKinect_'+direction+'ront.csv', i))!=0):
             fileank=i
         if (len(re.findall(keywords_file12+'left', i))!=0):
             filename1=i
@@ -51,7 +51,15 @@ def space_recalage(nb_video, aix, frames, direction):
     data2=pd.DataFrame(pd.read_csv('testVedios/test'+nb_video+'/'+filename2))
 
     output={}
-
+    with open('../../semaine11/time calibration/testVideos/test'+nb_video+'/time_recalage_general.json') as json_data:
+        #with open('testVedios/test'+nb_video+'/time_recalage.json') as json_data:
+        jsondata = json.load(json_data)
+    if direction=='f':
+        dt=jsondata['dt1']
+    else:
+        dt=jsondata['dt2']
+    print('dt:',dt)
+      
     for arts in articulations: 
     # For aix Y (z)
 
@@ -129,13 +137,7 @@ def space_recalage(nb_video, aix, frames, direction):
         errsl=[]
         dy=[]
 
-        with open('../../semaine11/time calibration/testVideos/test'+nb_video+'/time_recalage_general.json') as json_data:
-        #with open('testVedios/test'+nb_video+'/time_recalage.json') as json_data:
-            jsondata = json.load(json_data)
-        if direction=='f':
-            dt=jsondata['dt1']
-        else:
-            dt=jsondata['dt2']
+        
         t1=[i-dt for i in t1]
         for d in range(-4000, 5000, 50):
             errsl.append(tools.comps(t1, anklesl, fieldl, ankle_l, d))

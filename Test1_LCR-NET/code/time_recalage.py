@@ -37,7 +37,7 @@ else:
         keywords_file12='hugo'+str(101+2*(int(nb_video)-14))+'.*'
     
 for i in files:
-    if (len(re.findall('.*joints_3DKinect_'+direction+'.*.csv', i))!=0):
+    if (len(re.findall('.*joints_3DKinect_'+direction+'ront.csv', i))!=0):
         fileang=i
     if (len(re.findall(keywords_file12+'left', i))!=0):
         filename1=i
@@ -112,7 +112,7 @@ ax3=fig3.add_subplot(211)
 ax3.set_xlabel('dt')
 ax3.set_ylabel('Err')
 ax3.plot(dt, errs, marker='.')
-dt_best=dt[errs.index(min(errs))]
+dt_best=1800#dt[errs.index(min(errs))]
 errs=[]
 dt=[]
 for d in range(dt_best-50, dt_best+50):
