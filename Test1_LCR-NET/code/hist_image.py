@@ -37,7 +37,7 @@ def his(nb_video, frame, size, joint):
     yjoints=d['frames'][frame][0]['pose2d'][13:]
     x=xjoints[joints[joint]]
     y=yjoints[joints[joint]] 
-    (x_d, y_d)=tools.RGBtoD((x, y))
+    (x_d, y_d)=tools.RGBtoD((x, y),frame)
     ndg_h1=img_m[y_d, x_d][0]# Original Depth_high
     ndg_b1=img_m[y_d+424, x_d][0]# Depth Original_low
     #print(img_m[(y_d-int((size-1)/2)):(y_d+int((size-1)/2)),(x_d-int((size-1)/2)):(x_d+int((size-1)/2))] )
@@ -76,6 +76,11 @@ def his(nb_video, frame, size, joint):
     ax1=fig.add_subplot(221)
     ax1.imshow(img_m,'gray')
     ax1.set_title('Depth map')
+    ax1.scatter(x_d, y_d,s=1,color='red')
+    ax1.plot([x_d-size/2,x_d-size/2,x_d+size/2,x_d+size/2,x_d-size/2], [y_d-size/2,y_d+size/2,y_d+size/2,y_d-size/2,y_d-size/2],color='orange')
+    ax1.scatter(x_d, y_d+424,s=3,color='red')
+    ax1.plot([x_d-size/2,x_d-size/2,x_d+size/2,x_d+size/2,x_d-size/2], [y_d+424-size/2,y_d+424+size/2,y_d+424+size/2,y_d+424-size/2,y_d+424-size/2],color='orange')
+   
     ax2=fig.add_subplot(222)
     ax2.set_title('Histogramme')
     ax2.set_xlabel('Distance(cm)')
@@ -123,7 +128,7 @@ def his(nb_video, frame, size, joint):
     plt.show()
     return (zm, ndg_h1*256/6+ndg_b1)
 
-hist=his('2', 104, 7, 'rknee')
+hist=his('2', 101, 7, 'rankle')
 print(hist)
 '''
 im_h=np.zeros((500,60),np.uint8)

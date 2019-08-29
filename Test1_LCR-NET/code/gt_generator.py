@@ -238,20 +238,20 @@ for i in range(len(final['frame'])):
 #ax2.plot(tfl, jsonfifinal['kangle_l'], marker='.', color='b')
 #ax2.plot(tfl, jsonfififinal['kangle_l'], marker='.', color='g')
 #ax2.set_title('Left Angle (gt_r, Tfrespective_b,and joint.find('step')==-1 Tfgeneral_g)')
-ax2.set_title('Left Angle_gt')
+ax2.set_title('Left Ankle_gt')
 ax2.scatter(final['frame'], final['Y_rak'], marker='.', c=final['step'])
 ax2.plot(final['frame'], final['Y_rak'], color='r', lw=0.1)
 
-
+fig4=plt.figure()
 #for i in tfl:
     #ax2.text(i,jsonfinal['X_lag'][i]+2, jsonfinal['step'], color='g')
-ax4=fig2.add_subplot(212)
+ax4=fig4.add_subplot(111)
 #ax4.scatter(final['frame'], final['X_rag'], marker='.', c=final['step']+1)
-ax4.plot(final['frame'], final['X_rag'], color='r', marker='.')
+ax4.plot(final['frame'], final['X_lag'], color='r', marker='.')
 
-ax4.plot(tfl, jsonfifinal['kangle_r'], marker='.', color='b')
-ax4.plot(tfl, jsonfififinal['kangle_r'], marker='.', color='g')
-ax4.set_title('Right Angle (gt_r, Tfrespective_b, Tfgeneral_g)')
+ax4.plot(tfl, jsonfifinal['kangle_l'], marker='.', color='b')
+ax4.plot(tfl, jsonfififinal['kangle_l'], marker='.', color='g')
+ax4.set_title('Left Angle (gt_l, Tfrespective_b, Tfgeneral_g)')
 
 fig3=plt.figure()
 ax5=fig3.add_subplot(111)

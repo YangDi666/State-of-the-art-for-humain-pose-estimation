@@ -209,16 +209,16 @@ if __name__=='__main__':
     # show original ankle dis            
     fig1=plt.figure()
     ax1=fig1.add_subplot(111)
-    ax1.plot(k['frames'], k['z_lak'], marker='.', color='b', lw=0.8)
-    ax1.plot(k['frames'], k['z_rak'], marker='.', color='r', lw=0.8)
+    ax1.plot(k['frames'], k['z_lak'], marker='.', color='b', lw=1.8)
+    ax1.plot(k['frames'], k['z_rak'], marker='.', color='r', lw=1.8)
 
     # show corrected ankle dis
     print('-----correct1 for ak-----')
     correct1(k['z_lak'], k['bad_frame'], 'ak', 3)
     print('---------')
     correct1(k['z_rak'], k['bad_frame'], 'ak', 3)
-    ax1.plot(k['frames'], k['z_lak'], marker='.', color='b', lw=0.5)
-    ax1.plot(k['frames'], k['z_rak'], marker='.', color='r', lw=0.5)
+    ax1.plot(k['frames'], k['z_lak'], marker='.', color='b', lw=1.5)
+    ax1.plot(k['frames'], k['z_rak'], marker='.', color='r', lw=1.5)
     print('-----correct2 for ak-----')
     correct2(k['z_lak'], k['bad_frame'], err_type=11)
     correct2(k['z_rak'], k['bad_frame'], err_type=10)
@@ -230,8 +230,8 @@ if __name__=='__main__':
     k['y_rak']=filter(list(k['y_rak']),size, flt_type)
     k['y_lak']=filter(list(k['y_lak']),size, flt_type)
     
-    ax1.plot(k['frames'], k['z_lak'], marker='.', color='#87CEFA', lw=0.2)
-    ax1.plot(k['frames'], k['z_rak'], marker='.', color='#FFC0CB', lw=0.2)
+    ax1.plot(k['frames'], k['z_lak'], marker='.', color='#87CEFA', lw=1.2)
+    ax1.plot(k['frames'], k['z_rak'], marker='.', color='#FFC0CB', lw=1.2)
     ax1.set_ylabel('z of ak_kinect')
     ax1.set_xlabel('frame')
     ax1.set_title('Correction for ak')
@@ -239,8 +239,8 @@ if __name__=='__main__':
     # show original as dis            
     fig2=plt.figure()
     ax4=fig2.add_subplot(111)
-    ax4.plot(k['frames'], k['z_las'], marker='.', color='b', lw=0.8)
-    ax4.plot(k['frames'], k['z_ras'], marker='.', color='r', lw=0.8)
+    ax4.plot(k['frames'], k['z_las'], marker='.', color='b', lw=1.8)
+    ax4.plot(k['frames'], k['z_ras'], marker='.', color='r', lw=1.8)
 
     # show corrected as dis
     print('-----correct1 for as-----')
@@ -258,8 +258,8 @@ if __name__=='__main__':
     k['y_ras']=filter(list(k['y_ras']),size, flt_type)
     k['y_las']=filter(list(k['y_las']),size, flt_type)
     
-    ax4.plot(k['frames'], k['z_las'], marker='.', color='#87CEFA', lw=0.2)
-    ax4.plot(k['frames'], k['z_ras'], marker='.', color='#FFC0CB', lw=0.2)
+    ax4.plot(k['frames'], k['z_las'], marker='.', color='#87CEFA', lw=1.2)
+    ax4.plot(k['frames'], k['z_ras'], marker='.', color='#FFC0CB', lw=1.2)
     ax4.set_ylabel('z of as_kinect')
     ax4.set_xlabel('frame')
     ax4.set_title('Correction for as')
@@ -267,8 +267,8 @@ if __name__=='__main__':
     # show original kn dis            
     fig3=plt.figure()
     ax5=fig3.add_subplot(111)
-    ax5.plot(k['frames'], k['z_lkn'], marker='.', color='b', lw=0.8)
-    ax5.plot(k['frames'], k['z_rkn'], marker='.', color='r', lw=0.8)
+    ax5.plot(k['frames'], k['z_lkn'], marker='.', color='b', lw=1.8)
+    ax5.plot(k['frames'], k['z_rkn'], marker='.', color='r', lw=1.8)
 
     # show corrected as dis
     print('-----correct1 for kn-----')
@@ -283,8 +283,8 @@ if __name__=='__main__':
     k['y_rkn']=filter(list(k['y_rkn']),size, flt_type)
     k['y_lkn']=filter(list(k['y_lkn']),size, flt_type)
     
-    ax5.plot(k['frames'], k['z_lkn'], marker='.', color='#87CEFA', lw=0.2)
-    ax5.plot(k['frames'], k['z_rkn'], marker='.', color='#FFC0CB', lw=0.2)
+    ax5.plot(k['frames'], k['z_lkn'], marker='.', color='#87CEFA', lw=1.2)
+    ax5.plot(k['frames'], k['z_rkn'], marker='.', color='#FFC0CB', lw=1.2)
     ax5.set_title('z\' of KN_kinect')
     ax5.set_ylabel('z of kn_kinect')
     ax5.set_xlabel('frame')
@@ -296,7 +296,7 @@ if __name__=='__main__':
         k['kangle_r'][i]=180-tools.angle((k['x_rak'][i],k['y_rak'][i],k['z_rak'][i]),(k['x_rkn'][i],k['y_rkn'][i],k['z_rkn'][i]),(k['x_ras'][i],k['y_ras'][i],k['z_ras'][i]), False) 
     fig4=plt.figure()
     ax2=fig4.add_subplot(211)
-    ax2.plot(k['frames'], k['kangle_l'], color='b')
+    ax2.plot(k['frames'], k['kangle_l'])
     ax3=fig4.add_subplot(212)
     ax3.plot(k['frames'], k['kangle_r'], color='r')
     ax2.set_title('Corrected 3D Kinect Knee Angle (filter: '+flt_type+' size: '+str(size)+')') 

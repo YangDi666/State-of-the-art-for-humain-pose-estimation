@@ -186,7 +186,7 @@ def space_recalage(nb_video, aix, frames, direction):
             dm_l.remove(l)
     dm=sum(dm_l)/len(dm_l)
     print('Mean : ', dm)
-    plt.show()
+    #plt.show()
     return output, dm
    
 

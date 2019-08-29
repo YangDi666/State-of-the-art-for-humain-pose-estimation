@@ -164,14 +164,15 @@ def compt(t1, vd, t2, gt, dt, show=False):
             break
 
     vd_r=[vd[t1.index(j)] for j in t]  
-    err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    # err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))   
+    err=sum([abs(vd_r[k]-gt_r[k]) for k in range(len(t))])/len(t)  #MSE
     if show:
         fig2=plt.figure()
         axx=fig2.add_subplot(111)
-        axx.plot(t1, vd, marker='.')
-        axx.plot(t2, gt, marker='.')
-        axx.plot(t, gt_r, marker='.')
-        axx.text(1000, 80, 'Err: '+str(err))
+        axx.plot(t1, vd, marker='.',lw=2.0)
+        axx.plot(t2, gt, marker='.', lw=2.0)
+        axx.plot(t, gt_r, marker='.', lw=2.0)
+        axx.text(1000, 60, 'Err: '+str(err))
         axx.text(1000, 70, 'dt: '+str(dt))
     t=[i+dt for i in t]
     return [err, t, gt_r]
@@ -191,7 +192,8 @@ def comps(t1, vd, t2, gt, ds, show=False):
             break
 
     vd_r=[vd[t1.index(j)] for j in t]  
-    err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    # err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    err=sum([abs(vd_r[k]-gt_r[k]) for k in range(len(t))])/len(t)  #MSE
     if show:
         fig2=plt.figure()
         axx=fig2.add_subplot(111)

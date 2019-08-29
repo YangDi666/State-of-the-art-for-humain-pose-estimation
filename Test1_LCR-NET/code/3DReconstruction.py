@@ -159,7 +159,7 @@ def show_angle3d(nb_video, frames):
                 z.append(a[2])
         ax.scatter(x,z,y, s=1)
         
-        '''
+        
         # Show GT
         if int(datagt['frame'][0])<=t and int(datagt['frame'][len(datagt['frame'])-1]>=t):
             #show GT 3D
@@ -232,7 +232,7 @@ def show_angle3d(nb_video, frames):
             ax2.plot([xgcm[k] for k in [6,8,10,11,9,7]], [ygcm[k] for k in [6,8,10,11,9,7]], color='y' )
             ax2.plot([(xgcm[10]+xgcm[11])/2 ,(xgcm[4]+xgcm[5])/2], [(ygcm[10]+ygcm[11])/2, (ygcm[4]+ygcm[5])/2], color='y' )
          
-        '''    
+            
         # Show corrected Kinect 3D 
         if int(datakin['frames'][0])<=t and int(datakin['frames'][len(datakin['frames'])-1]>=t):
             xk=[]
@@ -278,6 +278,8 @@ def show_angle3d(nb_video, frames):
                 zjoints_3d.append(joints[2])
 
             print('3D Kinect: ', xjoints_3d, yjoints_3d, zjoints_3d)
+
+            
         # show joints
         ax.scatter(xjoints_3d, zjoints_3d, yjoints_3d , color='r')
         ax3.scatter(x3d, z3d, y3d , color='r')

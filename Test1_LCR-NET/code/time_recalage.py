@@ -59,16 +59,23 @@ ax.set_xlabel('t/ms')
 ax.set_ylabel('Angle_left')
 ax2.set_xlabel('t/ms') 
 ax2.set_ylabel('Angle_right')
-
+fileang3d='test'+nb_video+'_LCR-NET_angles.csv'
 angs=pd.DataFrame(pd.read_csv('testVedios/test'+nb_video+'/'+fileang))
 anglesl=angs['kangle_l']
 anglesr=angs['kangle_r']
+angs3d=pd.DataFrame(pd.read_csv('testVedios/test'+nb_video+'/'+fileang3d))
+anglesl3d=[180-k for k in list(map(float,angs3d['angle_left'][frames[0]:frames[1]]))]
+anglesr3d=[180-k for k in list(map(float,angs3d['angle_right'][frames[0]:frames[1]]))]
+print(type(anglesl3d[1]))
+
 #b, a = signal.butter(8, 0.3, 'lowpass') 
 #anglesl = signal.filtfilt(b, a, anglesl) 
 #anglesr = signal.filtfilt(b, a, anglesr)  
 
-ax.plot(time[frames[0]:frames[1]], anglesl, marker='.')
+#k=2792
+#time[frames[0]:frames[1]]=[i-k for i in time[frames[0]:frames[1]]]
 
+ax.plot(time[frames[0]:frames[1]], anglesl, marker='.')
 ax2.plot(time[frames[0]:frames[1]], anglesr, color='r', marker='.')#, marker='.')
 #for i in range(50): y1.append(i) # 每迭代一次，将i放入y1中画出来 ax.cla() # 清除键 ax.bar(y1, label='test', height=y1, width=0.3) ax.legend() plt.pause(0.1)
 
@@ -105,27 +112,27 @@ t1=time[frames[0]:frames[1]]
 errs=[]
 dt=[]
 for d in range(t1[0], int(t1[-1]-field[-1]), 50):
-    errs.append(tools.compt(t1, anglesl, field, angleX_l, d)[0]+tools.compt(t1, anglesr, field, angleX_r, d)[0])
+    errs.append(tools.compt(t1, anglesl3d, field, angleX_l, d)[0]+tools.compt(t1, anglesr3d, field, angleX_r, d)[0])
     dt.append(d)
 fig3=plt.figure()
 ax3=fig3.add_subplot(211)
 ax3.set_xlabel('dt')
 ax3.set_ylabel('Err')
 ax3.plot(dt, errs, marker='.')
-dt_best=1800#dt[errs.index(min(errs))]
+dt_best=2500#dt[errs.index(min(errs))]
 errs=[]
 dt=[]
 for d in range(dt_best-50, dt_best+50):
-    errs.append(tools.compt(t1, anglesl, field, angleX_l, d)[0]+tools.compt(t1, anglesr, field, angleX_r, d)[0])
+    errs.append(tools.compt(t1, anglesl3d, field, angleX_l, d)[0]+tools.compt(t1, anglesr3d, field, angleX_r, d)[0])
     dt.append(d)
 ax4=fig3.add_subplot(212)
 ax4.set_xlabel('dt')
 ax4.set_ylabel('Err')
 ax4.plot(dt, errs, marker='.')
-dt_best=dt[errs.index(min(errs))]
-errmin_l=tools.compt(t1, anglesl, field, angleX_l, dt_best, True)
-errmin_r=tools.compt(t1, anglesr, field, angleX_r, dt_best, True)
-print('dt : ', dt_best, 'Err : ', min(errs))
+dt_best=1949.6666666666667#dt[errs.index(min(errs))]
+errmin_l=tools.compt(t1, anglesl3d, field, angleX_l, dt_best, True)
+errmin_r=tools.compt(t1, anglesr3d, field, angleX_r, dt_best, True)
+print('dt : ', dt_best, 'Err mse : ', min(errs))
 plt.show()
 
 
