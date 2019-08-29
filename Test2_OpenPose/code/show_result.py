@@ -51,6 +51,14 @@ def show_angle3d(nb_video, frames):
     points2dy=[[] for p in range(18)]
     points2ddx=[[] for p in range(18)]
     points2ddy=[[] for p in range(18)]
+    
+    akdis=[]
+    kndis=[]
+    step=[]
+
+    bad_frame=[0]*(frames[1]-frames[0])
+    l_kn_ak=[]
+    r_kn_ak=[]   
 
     for t in tqdm(range(frames[0],frames[1])):
         #print(t)
@@ -88,11 +96,11 @@ def show_angle3d(nb_video, frames):
             yjoints2dd=[]
     
             for i in range(18):
-                joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im, True, 7)
+                joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im, t, True, 7)
                 #joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im)
                 #joints=tools.RGBto3D((xjoints[i], yjoints[i]), im, True,5)
                 #joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m)
-                joints2dd=tools.RGBtoD((xjoints2d[i], yjoints2d[i]))
+                joints2dd=tools.RGBtoD((xjoints2d[i], yjoints2d[i]), t)
                 
                 xjoints3d.append(joints[0])
                 yjoints3d.append(joints[1])
@@ -101,9 +109,18 @@ def show_angle3d(nb_video, frames):
                 yjoints2dd.append(joints2dd[1])
 
 
-        anglesl.append(180-tools.angle((xjoints3d[11], yjoints3d[11],zjoints3d[11]),(xjoints3d[12], yjoints3d[12],zjoints3d[12]),(xjoints3d[13], yjoints3d[13],zjoints3d[13])))
-        anglesr.append(180-tools.angle((xjoints3d[8], yjoints3d[8],zjoints3d[8]),(xjoints3d[9], yjoints3d[9],zjoints3d[9]),(xjoints3d[10], yjoints3d[10],zjoints3d[10])))
+        anglesl.append(180-tools.angle((xjoints3d[11], yjoints3d[11],zjoints3d[11]),(xjoints3d[12], yjoints3d[12],zjoints3d[12]),(xjoints3d[13], yjoints3d[13],zjoints3d[13]), False))
+        anglesr.append(180-tools.angle((xjoints3d[8], yjoints3d[8],zjoints3d[8]),(xjoints3d[9], yjoints3d[9],zjoints3d[9]),(xjoints3d[10], yjoints3d[10],zjoints3d[10]), False))
         
+        # static analysis
+        # save the important information:dis between ankles, as height, leg length
+        l_kn_ak.append(tools.get_distance((xjoints3d[12],yjoints3d[12],zjoints3d[12]),(xjoints3d[13],yjoints3d[13],zjoints3d[13])))
+        r_kn_ak.append(tools.get_distance((xjoints3d[9],yjoints3d[9],zjoints3d[9]),(xjoints3d[10],yjoints3d[10],zjoints3d[10])))
+        dak=(zjoints3d[10]-zjoints3d[13])
+        dkn=(zjoints3d[9]-zjoints3d[12])
+        akdis.append(dak)
+        kndis.append(dkn)
+           
         for p in range(18):  
             points3dx[p].append(xjoints3d[p])
             points3dy[p].append(yjoints3d[p])
@@ -139,6 +156,12 @@ def show_angle3d(nb_video, frames):
     data['frames']=frames
     data['kangle_l']=anglesl
     data['kangle_r']=anglesr
+    data['akdis']=akdis
+    data['kndis']=kndis
+    data['l_kn_ak']=l_kn_ak
+    data['r_kn_ak']=r_kn_ak
+    data['bad_frame']=bad_frame
+
     j=['head','nk','rsh','rel','rwr','lsh','lel','lwr','ras','rkn','rak','las','lkn','lak','reye','leye','rear','lear']   
     
     for p in range(18):
@@ -149,9 +172,10 @@ def show_angle3d(nb_video, frames):
         data2d['y_'+j[p]]=points2dy[p]
         data2dd['x_'+j[p]]=points2ddx[p]
         data2dd['y_'+j[p]]=points2ddy[p]
-        data=pd.DataFrame(data)
-        data2d=pd.DataFrame(data2d)
-        data2dd=pd.DataFrame(data2dd)
+    
+    data=pd.DataFrame(data)
+    data2d=pd.DataFrame(data2d)
+    data2dd=pd.DataFrame(data2dd)
 
     if frames[0]>250:
         data.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_OpenPose_joints_3DKinect_back.csv',encoding='gbk')

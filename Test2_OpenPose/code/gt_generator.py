@@ -158,12 +158,13 @@ print('GT_Kinect_general'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 # save jsonfifififinal : gt à 2D Color Tf individuelle
 jsonfifififinal={}
 j=['rak','lak','rkn','lkn','ras','las','rwr','lwr','rel','lel','rsh','lsh']
-
+jsonfifififinal['frame']=tfl
 for joint in j:
     jsonfifififinal['x_'+joint]=[]
     jsonfifififinal['y_'+joint]=[]
     for i in range(len(tfl)):
-        (x,y)=tools.K3DtoRGB((jsonfifinal['x_'+joint][i], jsonfifinal['y_'+joint][i], jsonfifinal['z_'+joint][i]))
+        (x,y)=tools.K3DtoD((jsonfifinal['x_'+joint][i], jsonfifinal['y_'+joint][i], jsonfifinal['z_'+joint][i]))
+        (x,y)=tools.DtoRGB((x,y))
         jsonfifififinal['x_'+joint].append(x)
         jsonfifififinal['y_'+joint].append(y)  
 data=pd.DataFrame(jsonfifififinal)
@@ -171,11 +172,13 @@ data.to_csv('testVideos'+'/test'+nb_video+'/'+number+'_GT-Vicon_OpenPose_2DColor
 print('GT_Color_respective'+keywords_file12.upper()[:-2]+'.csv', 'saved!')
 # save jsonfififififinal : gt à 2D Color Tf générale
 jsonfififififinal={}
+jsonfififififinal['frame']=tfl
 for joint in j:
     jsonfififififinal['x_'+joint]=[]
     jsonfififififinal['y_'+joint]=[]
     for i in range(len(tfl)):
-        (x,y)=tools.K3DtoRGB((jsonfififinal['x_'+joint][i], jsonfififinal['y_'+joint][i], jsonfififinal['z_'+joint][i]))
+        (x,y)=tools.K3DtoD((jsonfififinal['x_'+joint][i], jsonfififinal['y_'+joint][i], jsonfififinal['z_'+joint][i]))
+        (x,y)=tools.DtoRGB((x,y))
         jsonfififififinal['x_'+joint].append(x)
         jsonfififififinal['y_'+joint].append(y)  
 data=pd.DataFrame(jsonfififififinal)

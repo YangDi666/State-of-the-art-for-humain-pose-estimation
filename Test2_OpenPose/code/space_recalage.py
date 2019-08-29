@@ -30,7 +30,7 @@ def space_recalage(nb_video, aix, frames, direction):
             keywords_file12='hugo'+str(101+2*(int(nb_video)-14))+'.*'
     files=os.listdir('testVideos/test'+nb_video+'/') 
     for i in files:
-        if (len(re.findall('.*joints_3DKinect_'+direction+'.*.csv', i))!=0):
+        if (len(re.findall('.*joints_3DKinect_'+direction+'ront.csv', i))!=0):
             fileank=i
         if (len(re.findall(keywords_file12+'left', i))!=0):
             filename1=i
@@ -135,6 +135,7 @@ def space_recalage(nb_video, aix, frames, direction):
             dt=jsondata['dt1']
         else:
             dt=jsondata['dt2']
+        print('dt:',dt)
         t1=[i-dt for i in t1]
         for d in range(-4000, 5000, 50):
             errsl.append(tools.comps(t1, anklesl, fieldl, ankle_l, d))
@@ -183,7 +184,7 @@ def space_recalage(nb_video, aix, frames, direction):
             dm_l.remove(l)
     dm=sum(dm_l)/len(dm_l)
     print('Mean : ', dm)
-    #plt.show()
+    plt.show()
     return output, dm
    
 

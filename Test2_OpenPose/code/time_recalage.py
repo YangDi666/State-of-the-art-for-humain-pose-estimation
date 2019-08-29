@@ -109,7 +109,7 @@ ax3=fig3.add_subplot(211)
 ax3.set_xlabel('dt')
 ax3.set_ylabel('Err')
 ax3.plot(dt, errs, marker='.')
-dt_best=dt[errs.index(min(errs))]
+dt_best=2500#dt[errs.index(min(errs))]
 errs=[]
 dt=[]
 for d in range(dt_best-50, dt_best+50):
@@ -119,7 +119,7 @@ ax4=fig3.add_subplot(212)
 ax4.set_xlabel('dt')
 ax4.set_ylabel('Err')
 ax4.plot(dt, errs, marker='.')
-dt_best=dt[errs.index(min(errs))]
+dt_best=2499.3333333333335#dt[errs.index(min(errs))]
 errmin_l=tools.compt(t1, anglesl, field, angleX_l, dt_best, True)
 errmin_r=tools.compt(t1, anglesr, field, angleX_r, dt_best, True)
 print('dt : ', dt_best, 'Err : ', min(errs))
