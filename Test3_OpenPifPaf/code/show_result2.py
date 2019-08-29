@@ -27,9 +27,13 @@ def show_angle3d(nb_video, frames):
         if (len(re.findall('.*D.mp4', i))!=0):
             filedepth=i
             number=filedepth[:-5]
+        if (len(re.findall('_PifPaf_joints_3DKinect_front.csv', i))!=0):
+            filedis=i
     print(number)
     print(filejson)
+    print(filedis)
     print('testVideos'+'/test'+nb_video+'/'+number+'_PifPaf_joints_3DKinect_back.csv')
+    disdata=pd.DataFrame(pd.read_csv('testVideos/test'+nb_video+'/'+filedis))
     fig=plt.figure()
     ax=fig.add_subplot(211)
     ax2=fig.add_subplot(212)
@@ -88,20 +92,29 @@ def show_angle3d(nb_video, frames):
 
             xjoints2dd=[]
             yjoints2dd=[]
+            leg=['z_las','z_ras','z_lkn','z_rkn','z_lak','z_rak']
             for i in range(17):
-                joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im, t, True, 7)
-                #joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im)
-                joints2dd=tools.RGBtoD((xjoints2d[i], yjoints2d[i]),t)
+                if i in [11,13,15,12,14,16]:
+                    z3d=float(disdata[leg[i-11]][disdata['frames']==t])
+                    print(z3d)
+                    joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i], z3d), im, t)
+                    xjoints3d.append(joints[0])
+                    yjoints3d.append(joints[1])
+                    zjoints3d.append(joints[2])
+
+                else:
+                    joints=tools.RGBto3D((xjoints2d[i], yjoints2d[i]), im, t, True, 7)
+                    xjoints3d.append(joints[0])
+                    yjoints3d.append(joints[1])
+                    zjoints3d.append(joints[2])
                 
-                xjoints3d.append(joints[0])
-                yjoints3d.append(joints[1])
-                zjoints3d.append(joints[2])
+                joints2dd=tools.RGBtoD((xjoints2d[i], yjoints2d[i]), t)    
                 xjoints2dd.append(joints2dd[0])
                 yjoints2dd.append(joints2dd[1])
 
        
-        anglesl.append(180-tools.angle((xjoints3d[11],yjoints3d[11],zjoints3d[11]),(xjoints3d[13],yjoints3d[13],zjoints3d[13]),(xjoints3d[15],yjoints3d[15],zjoints3d[15])))
-        anglesr.append(180-tools.angle((xjoints3d[12],yjoints3d[12],zjoints3d[12]),(xjoints3d[14],yjoints3d[14],zjoints3d[14]),(xjoints3d[16],yjoints3d[16],zjoints3d[16]))) 
+        anglesl.append(180-tools.angle((xjoints3d[11],yjoints3d[11],zjoints3d[11]),(xjoints3d[13],yjoints3d[13],zjoints3d[13]),(xjoints3d[15],yjoints3d[15],zjoints3d[15]),False))
+        anglesr.append(180-tools.angle((xjoints3d[12],yjoints3d[12],zjoints3d[12]),(xjoints3d[14],yjoints3d[14],zjoints3d[14]),(xjoints3d[16],yjoints3d[16],zjoints3d[16]),False)) 
         # static analysis
         # save the important information:dis between ankles, as height, leg length
         l_kn_ak.append(tools.get_distance((xjoints3d[12],yjoints3d[12],zjoints3d[12]),(xjoints3d[13],yjoints3d[13],zjoints3d[13])))

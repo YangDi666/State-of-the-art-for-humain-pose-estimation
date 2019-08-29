@@ -15,11 +15,16 @@ CAMERA={
     'CX_D':263.148010253906, 
     'CY_D':200.292007446289}
 
-def RGBtoD(p):
-
+def RGBtoD(p, frame):
+    if frame<=30:
+        c=3.5
+    elif frame>=130:
+        c=4.5
+    else:
+        c=4
     x_c=p[0]
     y_c=p[1]
-    x_d=round((x_c-CAMERA['CX_C'])/CAMERA['FX_C']*CAMERA['FX_D']+CAMERA['CX_D']+4)
+    x_d=round((x_c-CAMERA['CX_C'])/CAMERA['FX_C']*CAMERA['FX_D']+CAMERA['CX_D']+c)
     y_d=round((y_c-CAMERA['CY_C'])/CAMERA['FY_C']*CAMERA['FY_D']+CAMERA['CY_D'])
     #print(x_d)
     #print(y_d)
@@ -38,35 +43,45 @@ def filter(p, im, size):
     win=np.array(win)
     return np.median(win)
 
-def RGBto3D(p, im, filter=False, size=0):
-    
-
+def RGBto3D(p, im, frame, filter=False, size=0):
+        
     x_c=p[0]
     y_c=p[1]
-    x_d=(x_c-CAMERA['CX_C'])/CAMERA['FX_C']*CAMERA['FX_D']+CAMERA['CX_D']+4
-    y_d=(y_c-CAMERA['CY_C'])/CAMERA['FY_C']*CAMERA['FY_D']+CAMERA['CY_D']
+    if frame<=30:
+        c=3.5
+    elif frame>=130:
+        c=4.5
+    else:
+        c=4
+    x_d=round((x_c-CAMERA['CX_C'])/CAMERA['FX_C']*CAMERA['FX_D']+CAMERA['CX_D']+c)
+    y_d=round((y_c-CAMERA['CY_C'])/CAMERA['FY_C']*CAMERA['FY_D']+CAMERA['CY_D'])
     #print(x_d)
     #print(y_d)
     #print(type(im[y_d][x_d][0]))
     #print(im[y_d+424][x_d][0])
-    if filter:
-        z=his_image(im, size, p)[0]
+    if len(p)==2:
+        if filter:
+            z=his_image(im, size, p, frame)[0]
+        else:
+            #print(im[round(y_d)][round(x_d)][0])
+            z=im[round(y_d)][round(x_d)][0]*256/6+im[round(y_d+424)][round(x_d)][0]
+        '''
+        if(z==0):
+            z1=max([im[y_d+i][x_d+j][0] for i in range(-2,3) for j in range(-2,3)])
+            z0=min([im[y_d+i][x_d+j][0] for i in range(-2,3) for j in range(-2,3)])
+        
+            z=z1*256+z0    
+        '''
+        x=(x_d-CAMERA['CX_D'])*z/CAMERA['FX_D']
+        y=(y_d-CAMERA['CY_D'])*(z)/CAMERA['FY_D']
     else:
-        #print(im[round(y_d)][round(x_d)][0])
-        z=im[round(y_d)][round(x_d)][0]*256/6+im[round(y_d+424)][round(x_d)][0]
-    '''
-    if(z==0):
-        z1=max([im[y_d+i][x_d+j][0] for i in range(-2,3) for j in range(-2,3)])
-        z0=min([im[y_d+i][x_d+j][0] for i in range(-2,3) for j in range(-2,3)])
-    
-        z=z1*256+z0    
-    '''
-    x=(x_d-CAMERA['CX_D'])*z/CAMERA['FX_D']
-    y=(y_d-CAMERA['CY_D'])*(z)/CAMERA['FY_D']
-    
+        z=p[2]
+        x=(x_d-CAMERA['CX_D'])*z/CAMERA['FX_D']
+        y=(y_d-CAMERA['CY_D'])*(z)/CAMERA['FY_D']
+        
     return (x, y, z)
 
-def angle(p1,p2,p3):
+def angle(p1,p2,p3,alwaysPositive=True):
     n=len(p1)
     # vectors
     v1=[(p1[i]-p2[i]) for i in range(n)]
@@ -76,7 +91,10 @@ def angle(p1,p2,p3):
     len_v1=math.sqrt(sum([(v1[i]**2) for i in range(n)]))
     len_v2=math.sqrt(sum([(v2[i]**2) for i in range(n)]))
     if(len_v1!=0 and len_v2!=0):
-        return math.degrees(math.acos(dot/(len_v1*len_v2)))
+        if not alwaysPositive and n==3 and (v1[2]<0 and v2[2]<=0):
+            return 360-math.degrees(math.acos(dot/(len_v1*len_v2)))
+        else:
+            return math.degrees(math.acos(dot/(len_v1*len_v2)))
     else:
         return 180
 
@@ -90,7 +108,7 @@ def v2i(cap, frame, save=False):
     else:
         return 'No image!!'
     
-def his_image(im, size, p):
+def his_image(im, size, p, frame):
 
     # médian
     #img_m=cv2.medianBlur(im,5)
@@ -106,10 +124,10 @@ def his_image(im, size, p):
    
     x=p[0]
     y=p[1]
-    (x_d, y_d)=RGBtoD((x, y))
+    (x_d, y_d)=RGBtoD((x, y),frame)
     ndg_h1=img_m[y_d, x_d][0]# Original Depth_high
     ndg_b1=img_m[y_d+424, x_d][0]# Depth Original_low
-    #print(ndg_h1, ndg_b1)
+    print(ndg_h1, ndg_b1)
     #print(img_m[(y_d-int((size-1)/2)):(y_d+int((size-1)/2)),(x_d-int((size-1)/2)):(x_d+int((size-1)/2))] )
     ng=[]
     #print(img_m[(y_d-int((size-1)/2)):(y_d+int((size-1)/2)),(x_d-int((size-1)/2)):(x_d+int((size-1)/2))] )
@@ -119,13 +137,13 @@ def his_image(im, size, p):
             if z0>120 and z0<850:
                 ng.append(int(round(z0)))
     
-    #print(len(ng))
+    print(len(ng))
     ngh=[0]*851
     for h in set(ng):
         ngh[h]=ng.count(h)
 
     zm=ngh.index(max(ngh))*10
-    #print(zm)
+    print(zm)
 
     return (zm, ndg_h1*256/6+ndg_b1)
 
@@ -146,14 +164,15 @@ def compt(t1, vd, t2, gt, dt, show=False):
             break
 
     vd_r=[vd[t1.index(j)] for j in t]  
-    err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    #err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    err=sum([abs(vd_r[k]-gt_r[k]) for k in range(len(t))])/len(t)  #MSE
     if show:
         fig2=plt.figure()
         axx=fig2.add_subplot(111)
         axx.plot(t1, vd, marker='.')
         axx.plot(t2, gt, marker='.')
         axx.plot(t, gt_r, marker='.')
-        axx.text(1000, 80, 'Err: '+str(err))
+        axx.text(1000, 60, 'Err: '+str(err))
         axx.text(1000, 70, 'dt: '+str(dt))
     t=[i+dt for i in t]
     return [err, t, gt_r]
@@ -173,7 +192,8 @@ def comps(t1, vd, t2, gt, ds, show=False):
             break
 
     vd_r=[vd[t1.index(j)] for j in t]  
-    err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    #err=math.sqrt(sum([(vd_r[k]-gt_r[k])**2 for k in range(len(t))]))    
+    err=sum([abs(vd_r[k]-gt_r[k]) for k in range(len(t))])/len(t)  #MSE
     if show:
         fig2=plt.figure()
         axx=fig2.add_subplot(111)
@@ -212,5 +232,18 @@ def K3DtoRGB(p):
 
 def K3DtoD(p):
     x_d=p[0]*(CAMERA['FX_D']/p[2])+CAMERA['CX_D']
-    y_d=p[1]*(CAMERA['FY_D']/p[2])+CAMERA['CY_D']
+    y_d=p[1]*(CAMERA['FY_D']/p[2])+CAMERA['CY_D']  
     return (x_d,y_d)
+    
+def DtoRGB(p):
+    x_d=p[0]
+    y_d=p[1]
+    x_c=round((x_d-CAMERA['CX_D']-4)/CAMERA['FX_D']*CAMERA['FX_C']+CAMERA['CX_C'])
+    y_c=round((y_d-CAMERA['CY_D'])/CAMERA['FY_D']*CAMERA['FY_C']+CAMERA['CY_C'])
+    return (x_c, y_c)
+
+def get_distance(p1, p2):
+    s=0
+    for i in range(len(p1)):
+        s+=(p1[i]-p2[i])**2
+    return math.sqrt(s)

@@ -1,5 +1,5 @@
 
-
+import pandas as pd
 import cv2
 import numpy as np
 import matplotlib.pylab as plt
@@ -26,6 +26,10 @@ def update(frame):
 
 def show_angle3d(nb_video, frames): 
     b=str(frames[0])
+    if frames[0]<=200:
+        direction='Front'
+    else:
+        direction='Back'
     files=os.listdir('testVideos/test'+nb_video+'/') 
     for i in files:
         if (len(re.findall('.*C\.json', i))!=0):
@@ -34,12 +38,29 @@ def show_angle3d(nb_video, frames):
             filedepth=i
         if (len(re.findall('.*C.mp4', i))!=0):
             filecolor=i
+        if (len(re.findall('_GT-Vicon_PifPaf_3DKinect_'+direction+'_generalTF', i))!=0):
+            filegtfm=i
+        if (len(re.findall('_GT-Vicon_PifPaf_3DKinect_'+direction+'_respectiveTF', i))!=0):
+            filegtf=i
+        if (len(re.findall('_GT-Vicon_PifPaf_2DColor_'+direction+'_generalTF', i))!=0):
+            filegtfcm=i
+        if (len(re.findall('_GT-Vicon_PifPaf_2DColor_'+direction+'_respectiveTF', i))!=0):
+            filegtfc=i    
+        if (len(re.findall('_PifPaf_joints_3DKinect_front.csv', i))!=0):
+            filekinect=i 
     print(filejson)
     print(filedepth)
     print(filecolor)
+    print(filekinect)
     fig=plt.figure()
     fig2=plt.figure()
     fig3=plt.figure()
+    datagtm=pd.DataFrame(pd.read_csv('testVideos/test'+nb_video+'/'+filegtfm))
+    datagt=pd.DataFrame(pd.read_csv('testVideos/test'+nb_video+'/'+filegtf))
+    datagtcm=pd.DataFrame(pd.read_csv('testVideos/test'+nb_video+'/'+filegtfcm))
+    datagtc=pd.DataFrame(pd.read_csv('testVideos/test'+nb_video+'/'+filegtfc))
+    datakin=pd.DataFrame(pd.read_csv('testVideos/test'+nb_video+'/'+filekinect))
+    
     def call_back(event):
         axtemp=event.inaxes
         x_min, x_max = axtemp.get_xlim()
@@ -104,11 +125,104 @@ def show_angle3d(nb_video, frames):
         # show 3d claud points
         for i in range(600,1000,3):
             for j in range(200,960,6):
-                a=tools.RGBto3D((i,j),img_m)
+                a=tools.RGBto3D((i,j),img_m,t)
                 x.append(a[0])
                 y.append(a[1])
                 z.append(a[2])
         ax.scatter(x,z,y, s=1)
+
+        # Show GT
+        if int(datagt['frame'][0])<=t and int(datagt['frame'][len(datagt['frame'])-1]>=t):
+             
+            xg=[]
+            yg=[]
+            zg=[]
+            xgm=[]
+            ygm=[]
+            zgm=[]
+            
+            for i in datagt.keys():
+                if i.find('x')!=-1:
+                    print((datagt[i][datagt['frame']==t]))
+                    xg.append(float(datagt[i][datagt['frame']==t]))
+                    xgm.append(float(datagtm[i][datagtm['frame']==t]))
+                    #xg.append(datagt[i][])
+                    #xg.append(datagt[i][datagt.frame==t])
+                if i.find('y')!=-1:
+                    yg.append(float(datagt[i][datagt['frame']==t]))
+                    ygm.append(float(datagtm[i][datagtm['frame']==t]))
+                if i.find('z')!=-1:
+                    zg.append(float(datagt[i][datagt['frame']==t]))
+                    zgm.append(float(datagtm[i][datagtm['frame']==t]))
+            print(xg, yg, zg)
+
+            # GT joints 3D
+            ax.scatter(xg, zg, yg, color='black')
+            ax.scatter(xgm, zgm, ygm, color='y')
+            
+            #GT SK 3D
+            ax.plot([xg[k] for k in [0,2,4,5,3,1]], [zg[k] for k in [0,2,4,5,3,1]], [yg[k] for k in [0,2,4,5,3,1]], color='black')
+            ax.plot([xg[k] for k in [6,8,10,11,9,7]], [zg[k] for k in [6,8,10,11,9,7]], [yg[k] for k in [6,8,10,11,9,7]], color='black' )
+            ax.plot([(xg[10]+xg[11])/2 ,(xg[4]+xg[5])/2], [(zg[10]+zg[11])/2, (zg[4]+zg[5])/2], [(yg[10]+yg[11])/2, (yg[4]+yg[5])/2], color='black' )
+            
+            ax.plot([xgm[k] for k in [0,2,4,5,3,1]], [zgm[k] for k in [0,2,4,5,3,1]], [ygm[k] for k in [0,2,4,5,3,1]], color='y')
+            ax.plot([xgm[k] for k in [6,8,10,11,9,7]], [zgm[k] for k in [6,8,10,11,9,7]], [ygm[k] for k in [6,8,10,11,9,7]], color='y' )
+            ax.plot([(xgm[10]+xgm[11])/2 ,(xgm[4]+xgm[5])/2], [(zgm[10]+zgm[11])/2, (zgm[4]+zgm[5])/2], [(ygm[10]+ygm[11])/2, (ygm[4]+ygm[5])/2], color='y' )  
+
+            # Show GT 2D
+            xgc=[]
+            ygc=[]
+            xgcm=[]
+            ygcm=[]
+        
+            for i in datagtc.keys():
+                if i.find('x')!=-1:
+                    print((datagtc[i][datagtc['frame']==t]))
+                    xgc.append(float(datagtc[i][datagtc['frame']==t]))
+                    xgcm.append(float(datagtcm[i][datagtcm['frame']==t]))
+                    #xg.append(datagt[i][])
+                    #xg.append(datagt[i][datagt.frame==t])
+                if i.find('y')!=-1:
+                    ygc.append(float(datagtc[i][datagtc['frame']==t]))
+                    ygcm.append(float(datagtcm[i][datagtcm['frame']==t]))
+            
+            print(xgc, ygc)
+
+            # GT joints 2D color
+            ax2.scatter(xgc,ygc, color='black')
+            ax2.scatter(xgcm,ygcm, color='y')
+            
+            #GT SK 2D color
+            ax2.plot([xgc[k] for k in [0,2,4,5,3,1]], [ygc[k] for k in [0,2,4,5,3,1]], color='black')
+            ax2.plot([xgc[k] for k in [6,8,10,11,9,7]], [ygc[k] for k in [6,8,10,11,9,7]], color='black' )
+            ax2.plot([(xgc[10]+xgc[11])/2 ,(xgc[4]+xgc[5])/2], [(ygc[10]+ygc[11])/2, (ygc[4]+ygc[5])/2], color='black' )
+            
+            ax2.plot([xgcm[k] for k in [0,2,4,5,3,1]], [ygcm[k] for k in [0,2,4,5,3,1]], color='y' )
+            ax2.plot([xgcm[k] for k in [6,8,10,11,9,7]], [ygcm[k] for k in [6,8,10,11,9,7]], color='y' )
+            ax2.plot([(xgcm[10]+xgcm[11])/2 ,(xgcm[4]+xgcm[5])/2], [(ygcm[10]+ygcm[11])/2, (ygcm[4]+ygcm[5])/2], color='y' )
+            
+        # Show corrected Kinect 3D 
+        if int(datakin['frames'][0])<=t and int(datakin['frames'][len(datakin['frames'])-1]>=t):
+            xk=[]
+            yk=[]
+            zk=[]
+            k=0
+            for i in datakin.keys():
+                if i.find('x')!=-1:
+                    print((datakin[i][datakin['frames']==t]))
+                    xk.append(float(datakin[i][datakin['frames']==t]))
+                if i.find('y_')!=-1:
+                    yk.append(float(datakin[i][datakin['frames']==t]))
+                if i.find('z')!=-1:
+                    zk.append(float(datakin[i][datakin['frames']==t]))
+            print('Corrected kinect: ',len(xk), len(yk), len(zk))
+            #corrected joints 3D
+            ax.scatter(xk, zk, yk, color='#800080')
+            
+            #corrected SK 3D
+            ax.plot([xk[k] for k in [10,8,6,5,7,9]], [zk[k] for k in [10,8,6,5,7,9]], [yk[k] for k in [10,8,6,5,7,9]], color='#800080')
+            ax.plot([xk[k] for k in [16,14,12,11,13,15]], [zk[k] for k in [16,14,12,11,13,15]], [yk[k] for k in [16,14,12,11,13,15]], color='#800080' )
+            ax.plot([xk[0] , (xk[5]+xk[6])/2 ,(xk[11]+xk[12])/2], [zk[0], (zk[5]+zk[6])/2, (zk[11]+zk[12])/2], [yk[0],  (yk[5]+yk[6])/2, (yk[11]+yk[12])/2], color='#800080' )
         
         if len(d['frames'][t])!=0:
             #SK 2D
@@ -122,7 +236,7 @@ def show_angle3d(nb_video, frames):
 
             for i in range(17):
                 
-                joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m, True, 7)
+                joints=tools.RGBto3D((xjoints[i], yjoints[i]), img_m, t, True, 7)
                 xjoints_3d.append(joints[0])
                 yjoints_3d.append(joints[1])
                 zjoints_3d.append(joints[2])
@@ -152,8 +266,8 @@ def show_angle3d(nb_video, frames):
         
         # show depth image and the joints
         ax5.imshow(im)
-        xjoints_d=[tools.RGBtoD((xjoints[i], yjoints[i]))[0] for i in range(17)]
-        yjoints_d=[tools.RGBtoD((xjoints[i], yjoints[i]))[1] for i in range(17)]
+        xjoints_d=[tools.RGBtoD((xjoints[i], yjoints[i]),t)[0] for i in range(17)]
+        yjoints_d=[tools.RGBtoD((xjoints[i], yjoints[i]),t)[1] for i in range(17)]
         ax5.plot([xjoints_d[k] for k in [10,8,6,5,7,9]], [yjoints_d[k] for k in [10,8,6,5,7,9]],color='#C71585' )
         ax5.plot([xjoints_d[k] for k in [16,14,12,11,13,15]], [yjoints_d[k] for k in [16,14,12,11,13,15]],color='#C71585')
         ax5.plot([xjoints_d[0] , (xjoints_d[5]+xjoints_d[6])/2, (xjoints_d[11]+xjoints_d[12])/2], [yjoints_d[0], (yjoints_d[5]+yjoints_d[6])/2, (yjoints_d[11]+yjoints_d[12])/2],color='#C71585')
@@ -199,6 +313,7 @@ def show_angle3d(nb_video, frames):
     plt.show()
 
 #for frame in range(100,150):
-frame=int(sys.argv[1])
-show_angle3d('2', [frame, frame+1])
+frame=int(sys.argv[2])
+nb_video=sys.argv[1]
+show_angle3d(nb_video, [frame, frame+1])
 sys.exit(1)
